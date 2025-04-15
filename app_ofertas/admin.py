@@ -1,3 +1,5 @@
 from django.contrib import admin
 
-# Register your models here.
+from app_ofertas.models import *
+
+admin.site.register([OrfetaServicioAgrario, OrfetaProductosLacteos, OrfetasFrutas, OrfetaInsumoTecnologico, OrfetaCerealesLegumbres, OrfetaTuberculosRaices, OrfetaPastosForrajes])
