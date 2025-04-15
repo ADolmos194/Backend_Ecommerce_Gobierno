@@ -7,7 +7,7 @@ class OrfetaServicioAgrario(models.Model):
     
     provincia = models.ForeignKey(Provincia, on_delete=models.CASCADE)
     distrito = models.ForeignKey(Distrito, on_delete=models.CASCADE)
-    imagen = models.ImageField(upload_to='imagenes/ofertas_servicioagrario/', null=True, blank=True)
+    imagen = models.ImageField(upload_to='ofertas_servicioagrario/', null=True, blank=True)
     fecha_publicacion = models.DateField(null=True, blank=True)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     descripcion = models.TextField(null=True, blank=True)

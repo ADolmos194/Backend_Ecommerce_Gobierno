@@ -58,6 +58,7 @@ CLOUDINARY_STORAGE = {
     'API_SECRET': 'CLOUDINARY_URL=cloudinary://211866266371537:3sCSOa_h2TirhKpLj4XTwBFBxbY@dvkkujubq',
 }
 
+
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',
     'django.middleware.security.SecurityMiddleware',
