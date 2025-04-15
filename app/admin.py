@@ -2,4 +2,4 @@ from django.contrib import admin
 
 from app.models import *
 
-admin.site.register([Estado])
+admin.site.register([Estado, Provincia, Distrito])

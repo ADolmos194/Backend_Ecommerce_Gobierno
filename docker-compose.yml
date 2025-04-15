@@ -1,0 +1,26 @@
+services:
+  backecommercegobierno:
+    build: .
+    container_name: backecommercegobierno
+    command: python manage.py runserver 0.0.0.0:8000
+    volumes:
+      - .:/code_free
+    ports:
+      - "8080:8000"
+    environment:
+      - SECRET_KEY=${SECRET_KEY}
+      - DB_NAME=${DB_NAME}
+      - DB_USER=${DB_USER}
+      - DB_PASSWORD=${DB_PASSWORD}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+
+  dbecommercegobierno:
+    image: postgres:13
+    container_name: dbecommercegobierno
+    environment:
+      - POSTGRES_DB=${DB_NAME}
+      - POSTGRES_USER=${DB_USER}
+      - POSTGRES_PASSWORD=${DB_PASSWORD}
+    ports:
+      - "4200:5432"
