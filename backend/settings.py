@@ -37,6 +37,8 @@ INSTALLED_APPS = [
     'django.contrib.contenttypes',
     'django.contrib.sessions',
     'django.contrib.messages',
+    'cloudinary',
+    'cloudinary_storage',
     'django.contrib.staticfiles',
     'rest_framework',
     'corsheaders',
@@ -47,6 +49,14 @@ INSTALLED_APPS = [
     'app_demandas',
     'app_noticias',
 ]
+
+DEFAULT_FILE_STORAGE = 'cloudinary_storage.storage.MediaCloudinaryStorage'
+
+CLOUDINARY_STORAGE = {
+    'CLOUD_NAME': 'dvkkujubq',
+    'API_KEY': '211866266371537',
+    'API_SECRET': 'CLOUDINARY_URL=cloudinary://211866266371537:3sCSOa_h2TirhKpLj4XTwBFBxbY@dvkkujubq',
+}
 
 MIDDLEWARE = [
     'whitenoise.middleware.WhiteNoiseMiddleware',

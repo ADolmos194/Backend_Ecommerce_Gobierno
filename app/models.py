@@ -87,6 +87,7 @@ class Departamento(models.Model):
 class Provincia(models.Model):
 
     nombre = models.CharField(max_length=100, null=True, blank=True)
+    departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE)
     estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
@@ -100,6 +101,7 @@ class Provincia(models.Model):
 class Distrito(models.Model):
 
     nombre = models.CharField(max_length=100, null=True, blank=True)
+    provincia = models.ForeignKey(Provincia, on_delete=models.CASCADE)  
     estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
