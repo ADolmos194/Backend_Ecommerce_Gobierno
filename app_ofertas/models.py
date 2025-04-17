@@ -3,11 +3,11 @@ from django.db import models
 from app_categorias.models import Producto
 from app.models import Distrito, Estado, Provincia
 
-class OrfetaServicioAgrario(models.Model):
+class OfertasServicioAgrario(models.Model):
     
     provincia = models.ForeignKey(Provincia, on_delete=models.CASCADE)
     distrito = models.ForeignKey(Distrito, on_delete=models.CASCADE)
-    imagen = models.ImageField(upload_to='ofertas_servicioagrario/', null=True, blank=True)
+    imagen = models.ImageField(upload_to='imagenes/ofertas_servicioagrario/', null=True, blank=True)
     fecha_publicacion = models.DateField(null=True, blank=True)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     descripcion = models.TextField(null=True, blank=True)
@@ -21,15 +21,17 @@ class OrfetaServicioAgrario(models.Model):
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "ofectaservicioagrario"
+        db_table = "ofertasservicioagrario"
         
     def __str__(self):
         return '%s' % (self.descripcion)
     
 
-class OrfetaProductosLacteos(models.Model):
+class OfertasProductosLacteos(models.Model):
+    
     provincia = models.ForeignKey(Provincia, on_delete=models.CASCADE)
     distrito = models.ForeignKey(Distrito, on_delete=models.CASCADE)
+    imagen = models.ImageField(upload_to='imagenes/ofertas_productoslacteos/', null=True, blank=True)
     fecha_publicacion = models.DateField(null=True, blank=True)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     descripcion = models.TextField(null=True, blank=True)
@@ -43,14 +45,16 @@ class OrfetaProductosLacteos(models.Model):
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "ofectaproductoslacteos"
+        db_table = "ofertasproductoslacteos"
         
     def __str__(self):
         return '%s' % (self.descripcion)
     
-class OrfetasFrutas(models.Model):
+class OfertasFrutas(models.Model):
+    
     provincia = models.ForeignKey(Provincia, on_delete=models.CASCADE)
     distrito = models.ForeignKey(Distrito, on_delete=models.CASCADE)
+    imagen = models.ImageField(upload_to='imagenes/ofectas_frutas/', null=True, blank=True)
     fecha_publicacion = models.DateField(null=True, blank=True)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     descripcion = models.TextField(null=True, blank=True)
@@ -69,9 +73,11 @@ class OrfetasFrutas(models.Model):
     def __str__(self):
         return '%s' % (self.descripcion)
 
-class OrfetaInsumoTecnologico(models.Model):
+class OfertasInsumoTecnologico(models.Model):
+    
     provincia = models.ForeignKey(Provincia, on_delete=models.CASCADE)
     distrito = models.ForeignKey(Distrito, on_delete=models.CASCADE)
+    imagen = models.ImageField(upload_to='imagenes/ofertas_insumotecnologico/', null=True, blank=True)
     fecha_publicacion = models.DateField(null=True, blank=True)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     descripcion = models.TextField(null=True, blank=True)
@@ -85,14 +91,16 @@ class OrfetaInsumoTecnologico(models.Model):
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "ofectainsumotecnologico"
+        db_table = "ofertasinsumotecnologico"
         
     def __str__(self):
         return '%s' % (self.descripcion)
     
-class OrfetaCerealesLegumbres(models.Model):
+class OfertasCerealesLegumbres(models.Model):
+    
     provincia = models.ForeignKey(Provincia, on_delete=models.CASCADE)
     distrito = models.ForeignKey(Distrito, on_delete=models.CASCADE)
+    imagen = models.ImageField(upload_to='imagenes/ofertas_cerealeslegumbres/', null=True, blank=True)
     fecha_publicacion = models.DateField(null=True, blank=True)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     descripcion = models.TextField(null=True, blank=True)
@@ -106,14 +114,16 @@ class OrfetaCerealesLegumbres(models.Model):
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "orfetacerealeslegumbres"
+        db_table = "ofertascerealeslegumbres"
         
     def __str__(self):
         return '%s' % (self.descripcion)
     
-class OrfetaTuberculosRaices(models.Model):
+class OfertasTuberculosRaices(models.Model):
+    
     provincia = models.ForeignKey(Provincia, on_delete=models.CASCADE)
     distrito = models.ForeignKey(Distrito, on_delete=models.CASCADE)
+    imagen = models.ImageField(upload_to='imagenes/ofertas_tuberculosraices/', null=True, blank=True)
     fecha_publicacion = models.DateField(null=True, blank=True)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     descripcion = models.TextField(null=True, blank=True)
@@ -127,15 +137,16 @@ class OrfetaTuberculosRaices(models.Model):
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "ofetatuberculosraices"
+        db_table = "ofertastuberculosraices"
         
     def __str__(self):
         return '%s' % (self.descripcion)
     
-class OrfetaPastosForrajes(models.Model):
+class OfertasPastosForrajes(models.Model):
+    
     provincia = models.ForeignKey(Provincia, on_delete=models.CASCADE)
     distrito = models.ForeignKey(Distrito, on_delete=models.CASCADE)
-    distrito = models.ForeignKey(Distrito, on_delete=models.CASCADE)
+    imagen = models.ImageField(upload_to='imagenes/ofertas_pastosforrajes/', null=True, blank=True)
     fecha_publicacion = models.DateField(null=True, blank=True)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     descripcion = models.TextField(null=True, blank=True)
@@ -149,7 +160,7 @@ class OrfetaPastosForrajes(models.Model):
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "ofetapastosforrajes"
+        db_table = "ofertaspastosforrajes"
         
     def __str__(self):
         return '%s' % (self.descripcion)

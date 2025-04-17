@@ -1,6 +1,8 @@
 asarPy==1.0.1
 asgiref==3.8.1
 astroid==3.3.9
+boto3==1.37.34
+botocore==1.37.34
 certifi==2025.1.31
 charset-normalizer==3.4.1
 cloudinary==1.44.0
@@ -9,11 +11,13 @@ dj-database-url==2.3.0
 Django==5.2
 django-cloudinary-storage==0.3.0
 django-cors-headers==4.7.0
+django-storages==1.14.6
 djangorestframework==3.16.0
 flake8==7.2.0
 gunicorn==23.0.0
 idna==3.10
 isort==6.0.1
+jmespath==1.0.1
 mccabe==0.7.0
 packaging==24.2
 pillow==11.2.1
@@ -22,9 +26,11 @@ psycopg2-binary==2.9.10
 pycodestyle==2.13.0
 pyflakes==3.3.2
 pylint==3.3.6
+python-dateutil==2.9.0.post0
 python-decouple==3.8
 python-dotenv==1.1.0
 requests==2.32.3
+s3transfer==0.11.4
 six==1.17.0
 sqlparse==0.5.3
 tomlkit==0.13.2
