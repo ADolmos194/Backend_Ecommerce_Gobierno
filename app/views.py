@@ -762,13 +762,13 @@ def actualizar_mercado(request, id):
 
 @api_view(["DELETE"])
 @transaction.atomic
-def eliminar_conversionunidadmedida(request, id):
-
+def eliminar_mercado(request, id):
+    
     dic_response = {
         "code": 400,
         "status": "error",
-        "message": "Error al eliminar la unidad de medida",
-        "message_user": "Error al eliminar la unidad de medida",
+        "message": "Error al eliminar el mercado",
+        "message_user": "Error al eliminar el mercado",
         "data": [],
     }
 
@@ -778,37 +778,38 @@ def eliminar_conversionunidadmedida(request, id):
             data = {"estado": 3}        
 
             try:
-                queryset = ConversionUnidadMedida.objects.using('default').get(id=id)
+                queryset = Mercado.objects.using('default').get(id=id)
 
                 queryset.estado = Estado.objects.using('default').get(id=data["estado"])
                 queryset.fecha_modificacion = datetime.now()
                 
                 queryset.save()
 
-                serializer = ConversionUnidadMedidaSerializer(queryset)
+                serializer = MercadoSerializer(queryset)
 
                 dic_response.update(
                     {
                         "code": 200,
                         "status": "success",
-                        "message_user": "Conversion de Unidad de medida eliminado lógicamente",
-                        "message": "Conversion de Unidad de medida eliminado lógicamente",
+                        "message_user": "Mercado eliminado lógicamente",
+                        "message": "Mercado eliminado lógicamente",
                         "data": serializer.data,
                     }
                 )
 
                 return JsonResponse(dic_response, status=200)
 
-            except ConversionUnidadMedida.DoesNotExist:
+            except Mercado.DoesNotExist:
                 return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
 
         except Exception as e:
-            logger.error(f"Error inesperado al eliminar la conversion de unidad de medida: {str(e)}")
+            logger.error(f"Error inesperado al eliminar el mercado: {str(e)}")
             dic_response["message"] = "Error inesperado"
             return JsonResponse(dic_response, status=500)
 
     return JsonResponse([], safe=False, status=status.HTTP_200_OK)
-
+    
+    
 # -> CRUD de Pais
 @api_view(["GET"])
 @transaction.atomic
