@@ -71,9 +71,24 @@ class Mercado(models.Model):
     def __str__(self):
         return '%s' % (self.nombre)
     
+
+class Pais(models.Model):
+
+    nombre = models.CharField(max_length=100, null=True, blank=True)
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "pais"
+        
+    def __str__(self):
+        return '%s' % (self.nombre)
+    
 class Departamento(models.Model):
 
     nombre = models.CharField(max_length=100, null=True, blank=True)
+    pais = models.ForeignKey(Pais, on_delete=models.CASCADE)
     estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
@@ -111,6 +126,21 @@ class Distrito(models.Model):
         
     def __str__(self):
         return '%s' % (self.nombre)
+
+class LocalidadCaserio(models.Model):
+
+    nombre = models.CharField(max_length=100, null=True, blank=True)
+    distrito = models.ForeignKey(Distrito, on_delete=models.CASCADE)  
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    fecha_modificacion = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        db_table = "localidadcaserio"
+        
+    def __str__(self):
+        return '%s' % (self.nombre)
+    
 
 
     
