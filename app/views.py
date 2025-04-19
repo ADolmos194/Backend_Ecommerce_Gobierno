@@ -46,7 +46,9 @@ def listar_estado(request):
                     """
                     SELECT
                         id,
-                        nombre
+                        nombre,
+                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Estado
                     WHERE id IN (1, 2)
                     ORDER BY id DESC
@@ -96,7 +98,9 @@ def listar_unidadmedida(request):
                     """
                     SELECT
                         id,
-                        nombre
+                        nombre,
+                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM UnidadMedida
                     WHERE estado_id IN (1, 2)
                     ORDER BY id DESC
@@ -341,7 +345,9 @@ def listar_conversionunidadmedida(request):
                     """
                     SELECT
                         id,
-                        nombre
+                        nombre,
+                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM ConversionUnidadMedida 
                     WHERE estado_id IN (1, 2)
                     ORDER BY id DESC
@@ -585,7 +591,9 @@ def listar_mercados(request):
                     """
                     SELECT
                         id,
-                        nombre
+                        nombre,
+                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Mercado 
                     WHERE estado_id IN (1, 2)
                     ORDER BY id DESC
@@ -829,7 +837,10 @@ def listar_paises(request):
                     """
                     SELECT
                         id,
-                        nombre
+                        nombre,
+                        estado_id,
+                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Pais 
                     WHERE estado_id IN (1, 2)
                     ORDER BY id DESC
@@ -1071,7 +1082,9 @@ def listar_departamentos(request):
                     SELECT
                         id,
                         nombre,
-                        pais_id
+                        pais_id,
+                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Departamento 
                     WHERE estado_id IN (1, 2)
                     ORDER BY id DESC
@@ -1315,7 +1328,9 @@ def listar_provincias(request):
                     SELECT
                         id,
                         nombre,
-                        departamento_id
+                        departamento_id,
+                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Provincia 
                     WHERE estado_id IN (1, 2)
                     ORDER BY id DESC
@@ -1559,7 +1574,9 @@ def listar_distritos(request):
                     SELECT
                         id,
                         nombre,
-                        provincia_id
+                        provincia_id,
+                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Distrito 
                     WHERE estado_id IN (1, 2)
                     ORDER BY id DESC
@@ -1781,7 +1798,7 @@ def eliminar_distrito(request, id):
             return JsonResponse(dic_response, status=500)
     return JsonResponse([], safe=False, status=status.HTTP_200_OK)
 
-
+# -> CRUD de Localidad - Caserio
 api_view(["GET"])
 @transaction.atomic
 def listar_localidadcaserio(request):
@@ -1802,7 +1819,9 @@ def listar_localidadcaserio(request):
                     SELECT
                         id,
                         nombre,
-                        distrito_id
+                        distrito_id,
+                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM LocalidadCaserio 
                     WHERE estado_id IN (1, 2)
                     ORDER BY id DESC
