@@ -31,6 +31,8 @@ urlpatterns = [
     
     #---> URL Pais
     path('paises/', listar_paises, name='listar_paises'),
+    path('paisesactivos/', listar_paises_activos, name='listar_paises_activos'),
+    
     path('pais/crear/', crear_pais, name='crear_pais'),
     path('pais/actualizar/<int:id>/', actualizar_pais, name='actualizar_pais'),
     path('pais/eliminar/<int:id>/', eliminar_pais, name='eliminar_pais'),

@@ -868,6 +868,56 @@ def listar_paises(request):
             return JsonResponse(dic_response, status=500)
     return JsonResponse([], safe=False, status=status.HTTP_200_OK)
 
+@api_view(["GET"])
+@transaction.atomic
+def listar_paises_activos(request):
+    dic_response = {
+        "code": 400,
+        "status": "error",
+        "message": "Paises activos no encontradas",
+        "message_user": "Paises activos no encontradas",
+        "data": [],
+    }
+    if request.method == "GET":
+        try:
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        nombre,
+                        estado_id,
+                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                    FROM Pais 
+                    WHERE estado_id IN (1)
+                    ORDER BY id DESC
+                    """
+                )
+                dic_pais = ConvertirQueryADiccionarioDato(cursor)
+                cursor.close()
+
+            dic_response.update(
+                {
+                    "code": 200,
+                    "status": "success",
+                    "message_user": "Paises activos obtenidos correctamente",
+                    "message": "Paises activos obtenidos correctamente",
+                    "data": dic_pais,
+                }
+            )
+            return JsonResponse(dic_response, status=200)
+
+        except DatabaseError as e:
+            logger.error(f"Error al listar los Paises activos: {str(e)}")
+            dic_response.update(
+                {"message": "Error al listar los Paises activos", "data": str(e)}
+            )
+            return JsonResponse(dic_response, status=500)
+    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+
+
 @api_view(["POST"])
 @transaction.atomic
 def crear_pais(request):
@@ -1080,13 +1130,16 @@ def listar_departamentos(request):
                 cursor.execute(
                     """
                     SELECT
-                        id,
-                        nombre,
-                        pais_id,
-                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
-                    FROM Departamento 
-                    WHERE estado_id IN (1, 2)
+                        d.id,
+                        d.nombre,
+                        d.pais_id,
+                        p.nombre as nombre_pais,
+                        d.estado_id,
+                        TO_CHAR(d.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(d.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                    FROM Departamento d
+                    LEFT JOIN Pais p ON d.pais_id = p.id
+                    WHERE d.estado_id IN (1, 2)
                     ORDER BY id DESC
                     """
                 )
@@ -1114,7 +1167,7 @@ def listar_departamentos(request):
     return JsonResponse([], safe=False, status=status.HTTP_200_OK)
 
 
-api_view(["POST"])
+@api_view(["POST"])
 @transaction.atomic
 def crear_departamento(request):
     dic_response = {
