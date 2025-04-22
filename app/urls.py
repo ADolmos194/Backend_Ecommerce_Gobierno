@@ -39,18 +39,21 @@ urlpatterns = [
     
     #---> URL Departamento
     path('departamento/', listar_departamentos, name='listar_departamentos'),
+    path('departamentosactivos/', listar_departamentos_activos, name='listar_departamentos_activos'),
     path('departamento/crear/', crear_departamento, name='crear_departamento'),
     path('departamento/actualizar/<int:id>/', actualizar_departamento, name='actualizar_departamento'),
     path('departamento/eliminar/<int:id>/', eliminar_departamento, name='eliminar_departamento'),
     
     #---> URL Provincia
     path('provincia/', listar_provincias, name='listar_provincias'),
+    path('provinciasactivas/', listar_provincias_activos, name='listar_provincias_activos'),
     path('provincia/crear/', crear_provincia, name='crear_provincia'),
     path('provincia/actualizar/<int:id>/', actualizar_provincia, name='actualizar_provincia'),
     path('provincia/eliminar/<int:id>/', eliminar_provincia, name='eliminar_provincia'),
     
     #---> URL Distrito
     path('distrito/', listar_distritos, name='listar_distritos'),
+    path('distritosactivos/', listar_distritos_activos, name='listar_distritos_activos'),
     path('distrito/crear/', crear_distrito, name='crear_distrito'),
     path('distrito/actualizar/<int:id>/', actualizar_distrito, name='actualizar_distrito'),
     path('distrito/eliminar/<int:id>/', eliminar_distrito, name='eliminar_distrito'),

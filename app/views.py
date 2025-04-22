@@ -75,9 +75,11 @@ def listar_estado(request):
             )
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 # -> CRUD de Unidad de Medida
+
 
 @api_view(["GET"])
 @transaction.atomic
@@ -99,6 +101,7 @@ def listar_unidadmedida(request):
                     SELECT
                         id,
                         nombre,
+                        estado_id,
                         TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
                         TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM UnidadMedida
@@ -127,7 +130,8 @@ def listar_unidadmedida(request):
             )
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["POST"])
 @transaction.atomic
@@ -143,41 +147,46 @@ def crear_unidadmedida(request):
 
     if request.method == "POST":
         try:
-            
+
             data = json.loads(request.body)
-            data["estado"] = 1 
+            data["estado"] = 1
             data["fecha_creacion"] = datetime.now()
             data["fecha_modificacion"] = datetime.now()
 
             serializer = UnidadMedidaSerializer(data=data)
 
             if serializer.is_valid():
-            
+
                 with connection.cursor() as cursor:
 
                     nombre = data["nombre"]
-                    
+
                     cursor.execute(
-                        "SELECT nombre FROM UnidadMedida WHERE (nombre='{0}') and estado_id IN (1, 2)".format(nombre)
+                        "SELECT nombre FROM UnidadMedida WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
+                            nombre
+                        )
                     )
 
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe una Unidad de Medida con el mismo Nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe una Unidad de Medida con el mismo Nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
-                
+
                     cursor.close()
 
                 serializer.save()
-                
+
                 dic_response.update(
                     {
                         "code": 201,
                         "status": "success",
                         "message_user": "Unidad Medida creado exitosamente",
                         "message": "Unidad Medida  creado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
 
@@ -197,8 +206,9 @@ def crear_unidadmedida(request):
                 {"message_user": "Error inesperado", "data": {"error": str(e)}}
             )
             return JsonResponse(dic_response, status=500)
-        
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["PUT"])
 @transaction.atomic
@@ -214,16 +224,18 @@ def actualizar_unidadmedida(request, id):
 
     if request.method == "PUT":
         try:
-            
+
             data = json.loads(request.body)
-            
+
             data["fecha_modificacion"] = datetime.now()
 
             try:
-                queryset = UnidadMedida.objects.using('default').get(id=id)
+                queryset = UnidadMedida.objects.using("default").get(id=id)
             except UnidadMedida.DoesNotExist:
-                
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
 
             serializer = UnidadMedidaSerializer(queryset, data=data)
 
@@ -233,29 +245,36 @@ def actualizar_unidadmedida(request, id):
 
                     nombre = data["nombre"]
                     estado = data["estado"]
-                    
-                    cursor.execute("SELECT nombre FROM UnidadMedida WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(nombre, estado, id))
+
+                    cursor.execute(
+                        "SELECT nombre FROM UnidadMedida WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
+                            nombre, estado, id
+                        )
+                    )
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe una unidad de medida con el mismo nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe una unidad de medida con el mismo nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
 
                     cursor.close()
 
                 serializer.save()
-                
+
                 dic_response.update(
                     {
                         "code": 200,
                         "status": "success",
                         "message_user": "Unidad de medida actualizado exitosamente",
                         "message": "Unidad de medida actualizado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
 
-                return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+                return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
             dic_response.update(
                 {
@@ -267,13 +286,16 @@ def actualizar_unidadmedida(request, id):
 
         except Exception as e:
 
-            logger.error(f"Error inesperado al actualizar la unidad de medida: {str(e)}")
+            logger.error(
+                f"Error inesperado al actualizar la unidad de medida: {str(e)}"
+            )
             dic_response.update(
                 {"message_user": "Error inesperado", "data": {"error": str(e)}}
             )
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["DELETE"])
 @transaction.atomic
@@ -290,14 +312,14 @@ def eliminar_unidadmedida(request, id):
     if request.method == "DELETE":
         try:
 
-            data = {"estado": 3}        
+            data = {"estado": 3}
 
             try:
-                queryset = UnidadMedida.objects.using('default').get(id=id)
+                queryset = UnidadMedida.objects.using("default").get(id=id)
 
-                queryset.estado = Estado.objects.using('default').get(id=data["estado"])
+                queryset.estado = Estado.objects.using("default").get(id=data["estado"])
                 queryset.fecha_modificacion = datetime.now()
-                
+
                 queryset.save()
 
                 serializer = UnidadMedidaSerializer(queryset)
@@ -312,17 +334,19 @@ def eliminar_unidadmedida(request, id):
                     }
                 )
 
-                return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+                return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
             except UnidadMedida.DoesNotExist:
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
 
         except Exception as e:
             logger.error(f"Error inesperado al eliminar la unidad de medida: {str(e)}")
             dic_response["message"] = "Error inesperado"
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
 
 # -> CRUD de Conversion Unidad de Medida
@@ -346,6 +370,7 @@ def listar_conversionunidadmedida(request):
                     SELECT
                         id,
                         nombre,
+                        estado_id,
                         TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
                         TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM ConversionUnidadMedida 
@@ -370,11 +395,15 @@ def listar_conversionunidadmedida(request):
         except DatabaseError as e:
             logger.error(f"Error al listar las Conversiones unidad de medida: {str(e)}")
             dic_response.update(
-                {"message": "Error al listar las Conversiones unidad de medida", "data": str(e)}
+                {
+                    "message": "Error al listar las Conversiones unidad de medida",
+                    "data": str(e),
+                }
             )
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["POST"])
 @transaction.atomic
@@ -390,41 +419,46 @@ def crear_conversionunidadmedida(request):
 
     if request.method == "POST":
         try:
-            
+
             data = json.loads(request.body)
-            data["estado"] = 1 
+            data["estado"] = 1
             data["fecha_creacion"] = datetime.now()
             data["fecha_modificacion"] = datetime.now()
 
             serializer = ConversionUnidadMedidaSerializer(data=data)
 
             if serializer.is_valid():
-            
+
                 with connection.cursor() as cursor:
 
                     nombre = data["nombre"]
-                    
+
                     cursor.execute(
-                        "SELECT nombre FROM ConversionUnidadMedida WHERE (nombre='{0}') and estado_id IN (1, 2)".format(nombre)
+                        "SELECT nombre FROM ConversionUnidadMedida WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
+                            nombre
+                        )
                     )
 
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe una Conversion de Unidad de Medida con el mismo nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe una Conversion de Unidad de Medida con el mismo nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
-                
+
                     cursor.close()
 
                 serializer.save()
-                
+
                 dic_response.update(
                     {
                         "code": 201,
                         "status": "success",
                         "message_user": "Conversion de Unidad Medida creado exitosamente",
                         "message": "Conversion de Unidad Medida  creado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
 
@@ -439,13 +473,16 @@ def crear_conversionunidadmedida(request):
 
         except Exception as e:
 
-            logger.error(f"Error inesperado al crear la Conversion de Unidad de medida: {str(e)}")
+            logger.error(
+                f"Error inesperado al crear la Conversion de Unidad de medida: {str(e)}"
+            )
             dic_response.update(
                 {"message_user": "Error inesperado", "data": {"error": str(e)}}
             )
             return JsonResponse(dic_response, status=500)
-        
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["PUT"])
 @transaction.atomic
@@ -461,16 +498,18 @@ def actualizar_conversionunidadmedida(request, id):
 
     if request.method == "PUT":
         try:
-            
+
             data = json.loads(request.body)
-            
+
             data["fecha_modificacion"] = datetime.now()
 
             try:
-                queryset = ConversionUnidadMedida.objects.using('default').get(id=id)
+                queryset = ConversionUnidadMedida.objects.using("default").get(id=id)
             except ConversionUnidadMedida.DoesNotExist:
-                
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
 
             serializer = ConversionUnidadMedidaSerializer(queryset, data=data)
 
@@ -480,25 +519,32 @@ def actualizar_conversionunidadmedida(request, id):
 
                     nombre = data["nombre"]
                     estado = data["estado"]
-                    
-                    cursor.execute("SELECT nombre FROM ConversionUnidadMedida WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(nombre, estado, id))
+
+                    cursor.execute(
+                        "SELECT nombre FROM ConversionUnidadMedida WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
+                            nombre, estado, id
+                        )
+                    )
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe una conversion de unidad de medida con el mismo nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe una conversion de unidad de medida con el mismo nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
 
                     cursor.close()
 
                 serializer.save()
-                
+
                 dic_response.update(
                     {
                         "code": 200,
                         "status": "success",
                         "message_user": "Conversion de Unidad de medida actualizado exitosamente",
                         "message": "Conversion de Unidad de medida actualizado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
 
@@ -514,13 +560,16 @@ def actualizar_conversionunidadmedida(request, id):
 
         except Exception as e:
 
-            logger.error(f"Error inesperado al actualizar la conversion de unidad de medida: {str(e)}")
+            logger.error(
+                f"Error inesperado al actualizar la conversion de unidad de medida: {str(e)}"
+            )
             dic_response.update(
                 {"message_user": "Error inesperado", "data": {"error": str(e)}}
             )
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["DELETE"])
 @transaction.atomic
@@ -537,14 +586,14 @@ def eliminar_conversionunidadmedida(request, id):
     if request.method == "DELETE":
         try:
 
-            data = {"estado": 3}        
+            data = {"estado": 3}
 
             try:
-                queryset = ConversionUnidadMedida.objects.using('default').get(id=id)
+                queryset = ConversionUnidadMedida.objects.using("default").get(id=id)
 
-                queryset.estado = Estado.objects.using('default').get(id=data["estado"])
+                queryset.estado = Estado.objects.using("default").get(id=data["estado"])
                 queryset.fecha_modificacion = datetime.now()
-                
+
                 queryset.save()
 
                 serializer = ConversionUnidadMedidaSerializer(queryset)
@@ -562,14 +611,19 @@ def eliminar_conversionunidadmedida(request, id):
                 return JsonResponse(dic_response, status=200)
 
             except ConversionUnidadMedida.DoesNotExist:
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
 
         except Exception as e:
-            logger.error(f"Error inesperado al eliminar la conversion de unidad de medida: {str(e)}")
+            logger.error(
+                f"Error inesperado al eliminar la conversion de unidad de medida: {str(e)}"
+            )
             dic_response["message"] = "Error inesperado"
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 # -> CRUD de Mercado
 @api_view(["GET"])
@@ -592,6 +646,7 @@ def listar_mercados(request):
                     SELECT
                         id,
                         nombre,
+                        estado_id,
                         TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
                         TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Mercado 
@@ -620,7 +675,8 @@ def listar_mercados(request):
             )
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["POST"])
 @transaction.atomic
@@ -636,41 +692,46 @@ def crear_mercado(request):
 
     if request.method == "POST":
         try:
-            
+
             data = json.loads(request.body)
-            data["estado"] = 1 
+            data["estado"] = 1
             data["fecha_creacion"] = datetime.now()
             data["fecha_modificacion"] = datetime.now()
 
             serializer = MercadoSerializer(data=data)
 
             if serializer.is_valid():
-            
+
                 with connection.cursor() as cursor:
 
                     nombre = data["nombre"]
-                    
+
                     cursor.execute(
-                        "SELECT nombre FROM Mercado WHERE (nombre='{0}') and estado_id IN (1, 2)".format(nombre)
+                        "SELECT nombre FROM Mercado WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
+                            nombre
+                        )
                     )
 
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe un Mercado con el mismo nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe un Mercado con el mismo nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
-                
+
                     cursor.close()
 
                 serializer.save()
-                
+
                 dic_response.update(
                     {
                         "code": 201,
                         "status": "success",
                         "message_user": "Mercado creado exitosamente",
                         "message": "Mercado creado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
 
@@ -690,8 +751,9 @@ def crear_mercado(request):
                 {"message_user": "Error inesperado", "data": {"error": str(e)}}
             )
             return JsonResponse(dic_response, status=500)
-        
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["PUT"])
 @transaction.atomic
@@ -707,16 +769,18 @@ def actualizar_mercado(request, id):
 
     if request.method == "PUT":
         try:
-            
+
             data = json.loads(request.body)
-            
+
             data["fecha_modificacion"] = datetime.now()
 
             try:
-                queryset = Mercado.objects.using('default').get(id=id)
+                queryset = Mercado.objects.using("default").get(id=id)
             except Mercado.DoesNotExist:
-                
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
 
             serializer = MercadoSerializer(queryset, data=data)
 
@@ -726,25 +790,32 @@ def actualizar_mercado(request, id):
 
                     nombre = data["nombre"]
                     estado = data["estado"]
-                    
-                    cursor.execute("SELECT nombre FROM Mercado WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(nombre, estado, id))
+
+                    cursor.execute(
+                        "SELECT nombre FROM Mercado WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
+                            nombre, estado, id
+                        )
+                    )
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe un Mercado con el mismo nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe un Mercado con el mismo nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
 
                     cursor.close()
 
                 serializer.save()
-                
+
                 dic_response.update(
                     {
                         "code": 200,
                         "status": "success",
                         "message_user": "Mercado actualizado exitosamente",
                         "message": "Mercado actualizado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
 
@@ -766,12 +837,13 @@ def actualizar_mercado(request, id):
             )
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["DELETE"])
 @transaction.atomic
 def eliminar_mercado(request, id):
-    
+
     dic_response = {
         "code": 400,
         "status": "error",
@@ -783,14 +855,14 @@ def eliminar_mercado(request, id):
     if request.method == "DELETE":
         try:
 
-            data = {"estado": 3}        
+            data = {"estado": 3}
 
             try:
-                queryset = Mercado.objects.using('default').get(id=id)
+                queryset = Mercado.objects.using("default").get(id=id)
 
-                queryset.estado = Estado.objects.using('default').get(id=data["estado"])
+                queryset.estado = Estado.objects.using("default").get(id=data["estado"])
                 queryset.fecha_modificacion = datetime.now()
-                
+
                 queryset.save()
 
                 serializer = MercadoSerializer(queryset)
@@ -808,16 +880,18 @@ def eliminar_mercado(request, id):
                 return JsonResponse(dic_response, status=200)
 
             except Mercado.DoesNotExist:
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
 
         except Exception as e:
             logger.error(f"Error inesperado al eliminar el mercado: {str(e)}")
             dic_response["message"] = "Error inesperado"
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
-    
-    
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
+
 # -> CRUD de Pais
 @api_view(["GET"])
 @transaction.atomic
@@ -866,7 +940,8 @@ def listar_paises(request):
                 {"message": "Error al listar los Paises", "data": str(e)}
             )
             return JsonResponse(dic_response, status=500)
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["GET"])
 @transaction.atomic
@@ -915,7 +990,7 @@ def listar_paises_activos(request):
                 {"message": "Error al listar los Paises activos", "data": str(e)}
             )
             return JsonResponse(dic_response, status=500)
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
@@ -931,41 +1006,46 @@ def crear_pais(request):
 
     if request.method == "POST":
         try:
-            
+
             data = json.loads(request.body)
-            data["estado"] = 1 
+            data["estado"] = 1
             data["fecha_creacion"] = datetime.now()
             data["fecha_modificacion"] = datetime.now()
 
             serializer = PaisSerializer(data=data)
 
             if serializer.is_valid():
-            
+
                 with connection.cursor() as cursor:
 
                     nombre = data["nombre"]
-                    
+
                     cursor.execute(
-                        "SELECT nombre FROM Pais WHERE (nombre='{0}') and estado_id IN (1, 2)".format(nombre)
+                        "SELECT nombre FROM Pais WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
+                            nombre
+                        )
                     )
 
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe un Pais con el mismo nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe un Pais con el mismo nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
-                
+
                     cursor.close()
 
                 serializer.save()
-                
+
                 dic_response.update(
                     {
                         "code": 201,
                         "status": "success",
                         "message_user": "Pais creado exitosamente",
                         "message": "Pais creado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
 
@@ -985,8 +1065,9 @@ def crear_pais(request):
                 {"message_user": "Error inesperado", "data": {"error": str(e)}}
             )
             return JsonResponse(dic_response, status=500)
-        
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["PUT"])
 @transaction.atomic
@@ -1001,16 +1082,18 @@ def actualizar_pais(request, id):
 
     if request.method == "PUT":
         try:
-            
+
             data = json.loads(request.body)
-            
+
             data["fecha_modificacion"] = datetime.now()
 
             try:
-                queryset = Pais.objects.using('default').get(id=id)
+                queryset = Pais.objects.using("default").get(id=id)
             except Pais.DoesNotExist:
-                
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
 
             serializer = PaisSerializer(queryset, data=data)
 
@@ -1020,25 +1103,32 @@ def actualizar_pais(request, id):
 
                     nombre = data["nombre"]
                     estado = data["estado"]
-                    
-                    cursor.execute("SELECT nombre FROM Pais WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(nombre, estado, id))
+
+                    cursor.execute(
+                        "SELECT nombre FROM Pais WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
+                            nombre, estado, id
+                        )
+                    )
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe un Pais con el mismo nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe un Pais con el mismo nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
 
                     cursor.close()
 
                 serializer.save()
-                
+
                 dic_response.update(
                     {
                         "code": 200,
                         "status": "success",
                         "message_user": "Pais actualizado exitosamente",
                         "message": "Pais actualizado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
 
@@ -1060,7 +1150,8 @@ def actualizar_pais(request, id):
             )
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["DELETE"])
 @transaction.atomic
@@ -1076,14 +1167,14 @@ def eliminar_pais(request, id):
     if request.method == "DELETE":
         try:
 
-            data = {"estado": 3}        
+            data = {"estado": 3}
 
             try:
-                queryset = Pais.objects.using('default').get(id=id)
+                queryset = Pais.objects.using("default").get(id=id)
 
-                queryset.estado = Estado.objects.using('default').get(id=data["estado"])
+                queryset.estado = Estado.objects.using("default").get(id=data["estado"])
                 queryset.fecha_modificacion = datetime.now()
-                
+
                 queryset.save()
 
                 serializer = PaisSerializer(queryset)
@@ -1101,14 +1192,16 @@ def eliminar_pais(request, id):
                 return JsonResponse(dic_response, status=200)
 
             except Pais.DoesNotExist:
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
 
         except Exception as e:
             logger.error(f"Error inesperado al eliminar el pais: {str(e)}")
             dic_response["message"] = "Error inesperado"
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
 
 # -> CRUD de Departamento
@@ -1164,7 +1257,62 @@ def listar_departamentos(request):
             )
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
+@api_view(["GET"])
+@transaction.atomic
+def listar_departamentos_activos(request):
+    dic_response = {
+        "code": 400,
+        "status": "error",
+        "message": "Departamentos activos no encontradas",
+        "message_user": "Departamentos activos no encontradas",
+        "data": [],
+    }
+
+    if request.method == "GET":
+        try:
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT
+                        d.id,
+                        d.nombre,
+                        d.pais_id,
+                        p.nombre as nombre_pais,
+                        d.estado_id,
+                        TO_CHAR(d.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(d.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                    FROM Departamento d
+                    LEFT JOIN Pais p ON d.pais_id = p.id
+                    WHERE d.estado_id IN (1)
+                    ORDER BY id DESC
+                    """
+                )
+                dic_departamento_activos = ConvertirQueryADiccionarioDato(cursor)
+                cursor.close()
+
+            dic_response.update(
+                {
+                    "code": 200,
+                    "status": "success",
+                    "message_user": "Departamentos activos obtenidos correctamente",
+                    "message": "Departamentos activos obtenidos correctamente",
+                    "data": dic_departamento_activos,
+                }
+            )
+            return JsonResponse(dic_response, status=200)
+
+        except DatabaseError as e:
+            logger.error(f"Error al listar los departamentos activos: {str(e)}")
+            dic_response.update(
+                {"message": "Error al listar los departamentos activos", "data": str(e)}
+            )
+            return JsonResponse(dic_response, status=500)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 
 @api_view(["POST"])
@@ -1180,41 +1328,46 @@ def crear_departamento(request):
 
     if request.method == "POST":
         try:
-            
+
             data = json.loads(request.body)
-            data["estado"] = 1 
+            data["estado"] = 1
             data["fecha_creacion"] = datetime.now()
             data["fecha_modificacion"] = datetime.now()
 
             serializer = DepartamentoSerializer(data=data)
 
             if serializer.is_valid():
-            
+
                 with connection.cursor() as cursor:
 
                     nombre = data["nombre"]
-                    
+
                     cursor.execute(
-                        "SELECT nombre FROM Departamento WHERE (nombre='{0}') and estado_id IN (1, 2)".format(nombre)
+                        "SELECT nombre FROM Departamento WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
+                            nombre
+                        )
                     )
 
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe un Departamento con el mismo nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe un Departamento con el mismo nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
-                
+
                     cursor.close()
 
                 serializer.save()
-                
+
                 dic_response.update(
                     {
                         "code": 201,
                         "status": "success",
                         "message_user": "Departamento creado exitosamente",
                         "message": "Departamento creado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
 
@@ -1234,8 +1387,8 @@ def crear_departamento(request):
                 {"message_user": "Error inesperado", "data": {"error": str(e)}}
             )
             return JsonResponse(dic_response, status=500)
-        
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
 
 @api_view(["PUT"])
@@ -1250,16 +1403,18 @@ def actualizar_departamento(request, id):
     }
     if request.method == "PUT":
         try:
-            
+
             data = json.loads(request.body)
-            
+
             data["fecha_modificacion"] = datetime.now()
 
             try:
-                queryset = Departamento.objects.using('default').get(id=id)
+                queryset = Departamento.objects.using("default").get(id=id)
             except Departamento.DoesNotExist:
-                
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
 
             serializer = DepartamentoSerializer(queryset, data=data)
 
@@ -1269,25 +1424,32 @@ def actualizar_departamento(request, id):
 
                     nombre = data["nombre"]
                     estado = data["estado"]
-                    
-                    cursor.execute("SELECT nombre FROM Departamento WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(nombre, estado, id))
+
+                    cursor.execute(
+                        "SELECT nombre FROM Departamento WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
+                            nombre, estado, id
+                        )
+                    )
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe un departamento con el mismo nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe un departamento con el mismo nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
 
                     cursor.close()
 
                 serializer.save()
-                
+
                 dic_response.update(
                     {
                         "code": 200,
                         "status": "success",
                         "message_user": "Departamento actualizado exitosamente",
                         "message": "Departamento actualizado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
 
@@ -1308,13 +1470,14 @@ def actualizar_departamento(request, id):
                 {"message_user": "Error inesperado", "data": {"error": str(e)}}
             )
             return JsonResponse(dic_response, status=500)
-        
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["DELETE"])
 @transaction.atomic
 def eliminar_departamento(request, id):
-    
+
     dic_response = {
         "code": 400,
         "status": "error",
@@ -1326,14 +1489,14 @@ def eliminar_departamento(request, id):
     if request.method == "DELETE":
         try:
 
-            data = {"estado": 3}        
+            data = {"estado": 3}
 
             try:
-                queryset = Departamento.objects.using('default').get(id=id)
+                queryset = Departamento.objects.using("default").get(id=id)
 
-                queryset.estado = Estado.objects.using('default').get(id=data["estado"])
+                queryset.estado = Estado.objects.using("default").get(id=data["estado"])
                 queryset.fecha_modificacion = datetime.now()
-                
+
                 queryset.save()
 
                 serializer = DepartamentoSerializer(queryset)
@@ -1351,15 +1514,18 @@ def eliminar_departamento(request, id):
                 return JsonResponse(dic_response, status=200)
 
             except Departamento.DoesNotExist:
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
 
         except Exception as e:
             logger.error(f"Error inesperado al eliminar el departamento: {str(e)}")
             dic_response["message"] = "Error inesperado"
-            return JsonResponse(dic_response, status=500)   
-    
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
-    
+            return JsonResponse(dic_response, status=500)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
+
 # -> CRUD de Provincia
 @api_view(["GET"])
 @transaction.atomic
@@ -1379,14 +1545,17 @@ def listar_provincias(request):
                 cursor.execute(
                     """
                     SELECT
-                        id,
-                        nombre,
-                        departamento_id,
-                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
-                    FROM Provincia 
-                    WHERE estado_id IN (1, 2)
-                    ORDER BY id DESC
+                        p.id,
+                        p.nombre,
+                        p.departamento_id,
+                        d.nombre as nombre_departamento,
+                        p.estado_id,
+                        TO_CHAR(p.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(p.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                    FROM Provincia p
+                    LEFT JOIN Departamento d ON p.departamento_id = d.id
+                    WHERE p.estado_id IN (1, 2)
+                    ORDER BY p.id DESC
                     """
                 )
                 dic_provincias = ConvertirQueryADiccionarioDato(cursor)
@@ -1410,7 +1579,62 @@ def listar_provincias(request):
             )
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
+@api_view(["GET"])
+@transaction.atomic
+def listar_provincias_activos(request):
+    dic_response = {
+        "code": 400,
+        "status": "error",
+        "message": "Provincias activas no encontradas",
+        "message_user": "Provincias activas no encontradas",
+        "data": [],
+    }
+
+    if request.method == "GET":
+        try:
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT
+                        p.id,
+                        p.nombre,
+                        p.departamento_id,
+                        d.nombre as nombre_departamento,
+                        p.estado_id,
+                        TO_CHAR(p.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(p.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                    FROM Provincia p
+                    LEFT JOIN Departamento d ON p.departamento_id = d.id
+                    WHERE p.estado_id IN (1)
+                    ORDER BY p.id DESC
+                    """
+                )
+                dic_provincias_activas = ConvertirQueryADiccionarioDato(cursor)
+                cursor.close()
+
+            dic_response.update(
+                {
+                    "code": 200,
+                    "status": "success",
+                    "message_user": "Provincias activas obtenidos correctamente",
+                    "message": "Provincias activas obtenidos correctamente",
+                    "data": dic_provincias_activas,
+                }
+            )
+            return JsonResponse(dic_response, status=200)
+
+        except DatabaseError as e:
+            logger.error(f"Error al listar las Provincias activas: {str(e)}")
+            dic_response.update(
+                {"message": "Error al listar las Provincias activas", "data": str(e)}
+            )
+            return JsonResponse(dic_response, status=500)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["POST"])
 @transaction.atomic
@@ -1425,41 +1649,46 @@ def crear_provincia(request):
 
     if request.method == "POST":
         try:
-            
+
             data = json.loads(request.body)
-            data["estado"] = 1 
+            data["estado"] = 1
             data["fecha_creacion"] = datetime.now()
             data["fecha_modificacion"] = datetime.now()
 
             serializer = ProvinciaSerializer(data=data)
 
             if serializer.is_valid():
-            
+
                 with connection.cursor() as cursor:
 
                     nombre = data["nombre"]
-                    
+
                     cursor.execute(
-                        "SELECT nombre FROM Provincia WHERE (nombre='{0}') and estado_id IN (1, 2)".format(nombre)
+                        "SELECT nombre FROM Provincia WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
+                            nombre
+                        )
                     )
 
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe una provincia con el mismo nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe una provincia con el mismo nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
-                
+
                     cursor.close()
 
                 serializer.save()
-                
+
                 dic_response.update(
                     {
                         "code": 201,
                         "status": "success",
                         "message_user": "Provincia creado exitosamente",
                         "message": "Provincia creado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
 
@@ -1479,8 +1708,9 @@ def crear_provincia(request):
                 {"message_user": "Error inesperado", "data": {"error": str(e)}}
             )
             return JsonResponse(dic_response, status=500)
-        
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["PUT"])
 @transaction.atomic
@@ -1495,16 +1725,18 @@ def actualizar_provincia(request, id):
 
     if request.method == "PUT":
         try:
-            
+
             data = json.loads(request.body)
-            
+
             data["fecha_modificacion"] = datetime.now()
 
             try:
-                queryset = Provincia.objects.using('default').get(id=id)
+                queryset = Provincia.objects.using("default").get(id=id)
             except Provincia.DoesNotExist:
-                
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
 
             serializer = ProvinciaSerializer(queryset, data=data)
 
@@ -1514,25 +1746,32 @@ def actualizar_provincia(request, id):
 
                     nombre = data["nombre"]
                     estado = data["estado"]
-                    
-                    cursor.execute("SELECT nombre FROM Provincia WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(nombre, estado, id))
+
+                    cursor.execute(
+                        "SELECT nombre FROM Provincia WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
+                            nombre, estado, id
+                        )
+                    )
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe una provincia con el mismo nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe una provincia con el mismo nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
 
                     cursor.close()
 
                 serializer.save()
-                
+
                 dic_response.update(
                     {
                         "code": 200,
                         "status": "success",
                         "message_user": "Provincia actualizado exitosamente",
                         "message": "Provincia actualizado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
 
@@ -1554,7 +1793,7 @@ def actualizar_provincia(request, id):
             )
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
 
 @api_view(["DELETE"])
@@ -1570,14 +1809,14 @@ def eliminar_provincia(request, id):
     if request.method == "DELETE":
         try:
 
-            data = {"estado": 3}        
+            data = {"estado": 3}
 
             try:
-                queryset = Provincia.objects.using('default').get(id=id)
+                queryset = Provincia.objects.using("default").get(id=id)
 
-                queryset.estado = Estado.objects.using('default').get(id=data["estado"])
+                queryset.estado = Estado.objects.using("default").get(id=data["estado"])
                 queryset.fecha_modificacion = datetime.now()
-                
+
                 queryset.save()
 
                 serializer = ProvinciaSerializer(queryset)
@@ -1595,15 +1834,16 @@ def eliminar_provincia(request, id):
                 return JsonResponse(dic_response, status=200)
 
             except Provincia.DoesNotExist:
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
 
         except Exception as e:
             logger.error(f"Error inesperado al eliminar la provincia: {str(e)}")
             dic_response["message"] = "Error inesperado"
             return JsonResponse(dic_response, status=500)
-        
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
 
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
 
 # -> CRUD de Distrito
@@ -1625,14 +1865,17 @@ def listar_distritos(request):
                 cursor.execute(
                     """
                     SELECT
-                        id,
-                        nombre,
-                        provincia_id,
-                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
-                    FROM Distrito 
-                    WHERE estado_id IN (1, 2)
-                    ORDER BY id DESC
+                        d.id,
+                        d.nombre,
+                        d.provincia_id,
+                        p.nombre as nombre_provincia,
+                        d.estado_id,
+                        TO_CHAR(d.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(d.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                    FROM Distrito d
+                    LEFT JOIN Provincia p ON d.provincia_id = p.id
+                    WHERE d.estado_id IN (1, 2)
+                    ORDER BY d.id DESC
                     """
                 )
                 dic_distritos = ConvertirQueryADiccionarioDato(cursor)
@@ -1656,7 +1899,62 @@ def listar_distritos(request):
             )
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
+
+@api_view(["GET"])
+@transaction.atomic
+def listar_distritos_activos(request):
+    dic_response = {
+        "code": 400,
+        "status": "error",
+        "message": "Distritos activos no encontradas",
+        "message_user": "Distritos activos no encontradas",
+        "data": [],
+    }
+
+    if request.method == "GET":
+        try:
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT
+                        d.id,
+                        d.nombre,
+                        d.provincia_id,
+                        p.nombre as nombre_provincia,
+                        d.estado_id,
+                        TO_CHAR(d.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(d.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                    FROM Distrito d
+                    LEFT JOIN Provincia p ON d.provincia_id = p.id
+                    WHERE d.estado_id IN (1)
+                    ORDER BY d.id DESC
+                    """
+                )
+                dic_distritos_activos = ConvertirQueryADiccionarioDato(cursor)
+                cursor.close()
+
+            dic_response.update(
+                {
+                    "code": 200,
+                    "status": "success",
+                    "message_user": "Distritos activos obtenidos correctamente",
+                    "message": "Distritos activos obtenidos correctamente",
+                    "data": dic_distritos_activos,
+                }
+            )
+            return JsonResponse(dic_response, status=200)
+
+        except DatabaseError as e:
+            logger.error(f"Error al listar los Distritos activos: {str(e)}")
+            dic_response.update(
+                {"message": "Error al listar los Distritos activos", "data": str(e)}
+            )
+            return JsonResponse(dic_response, status=500)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
@@ -1672,41 +1970,46 @@ def crear_distrito(request):
 
     if request.method == "POST":
         try:
-            
+
             data = json.loads(request.body)
-            data["estado"] = 1 
+            data["estado"] = 1
             data["fecha_creacion"] = datetime.now()
             data["fecha_modificacion"] = datetime.now()
 
             serializer = DistritoSerializer(data=data)
 
             if serializer.is_valid():
-            
+
                 with connection.cursor() as cursor:
 
                     nombre = data["nombre"]
-                    
+
                     cursor.execute(
-                        "SELECT nombre FROM Distrito WHERE (nombre='{0}') and estado_id IN (1, 2)".format(nombre)
+                        "SELECT nombre FROM Distrito WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
+                            nombre
+                        )
                     )
 
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe un distrito con el mismo nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe un distrito con el mismo nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
-                
+
                     cursor.close()
 
                 serializer.save()
-                
+
                 dic_response.update(
                     {
                         "code": 201,
                         "status": "success",
                         "message_user": "Distrito creado exitosamente",
                         "message": "Distrito creado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
 
@@ -1726,8 +2029,9 @@ def crear_distrito(request):
                 {"message_user": "Error inesperado", "data": {"error": str(e)}}
             )
             return JsonResponse(dic_response, status=500)
-        
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["PUT"])
 @transaction.atomic
@@ -1742,16 +2046,18 @@ def actualizar_distrito(request, id):
 
     if request.method == "PUT":
         try:
-            
+
             data = json.loads(request.body)
-            
+
             data["fecha_modificacion"] = datetime.now()
 
             try:
-                queryset = Distrito.objects.using('default').get(id=id)
+                queryset = Distrito.objects.using("default").get(id=id)
             except Distrito.DoesNotExist:
-                
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
 
             serializer = DistritoSerializer(queryset, data=data)
 
@@ -1761,25 +2067,32 @@ def actualizar_distrito(request, id):
 
                     nombre = data["nombre"]
                     estado = data["estado"]
-                    
-                    cursor.execute("SELECT nombre FROM Distrito WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(nombre, estado, id))
+
+                    cursor.execute(
+                        "SELECT nombre FROM Distrito WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
+                            nombre, estado, id
+                        )
+                    )
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe un distrito con el mismo nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe un distrito con el mismo nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
 
                     cursor.close()
 
                 serializer.save()
-                
+
                 dic_response.update(
                     {
                         "code": 200,
                         "status": "success",
                         "message_user": "Distrito actualizado exitosamente",
                         "message": "Distrito actualizado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
 
@@ -1801,7 +2114,7 @@ def actualizar_distrito(request, id):
             )
             return JsonResponse(dic_response, status=500)
 
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
 
 api_view(["DELETE"])
@@ -1818,14 +2131,14 @@ def eliminar_distrito(request, id):
     if request.method == "DELETE":
         try:
 
-            data = {"estado": 3}        
+            data = {"estado": 3}
 
             try:
-                queryset = Distrito.objects.using('default').get(id=id)
+                queryset = Distrito.objects.using("default").get(id=id)
 
-                queryset.estado = Estado.objects.using('default').get(id=data["estado"])
+                queryset.estado = Estado.objects.using("default").get(id=data["estado"])
                 queryset.fecha_modificacion = datetime.now()
-                
+
                 queryset.save()
 
                 serializer = DistritoSerializer(queryset)
@@ -1843,13 +2156,16 @@ def eliminar_distrito(request, id):
                 return JsonResponse(dic_response, status=200)
 
             except Distrito.DoesNotExist:
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
 
         except Exception as e:
             logger.error(f"Error inesperado al eliminar el distrito: {str(e)}")
             dic_response["message"] = "Error inesperado"
             return JsonResponse(dic_response, status=500)
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 # -> CRUD de Localidad - Caserio
 api_view(["GET"])
@@ -1870,12 +2186,15 @@ def listar_localidadcaserio(request):
                 cursor.execute(
                     """
                     SELECT
-                        id,
-                        nombre,
-                        distrito_id,
+                        l.id,
+                        l.nombre,
+                        l.distrito_id,
+                        d.nombre as nombre_distrito,
+                        l.estado_id,
                         TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
                         TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
-                    FROM LocalidadCaserio 
+                    FROM LocalidadCaserio l
+                    LEFT JOIN Distrito d ON l.distrito_id = d.id
                     WHERE estado_id IN (1, 2)
                     ORDER BY id DESC
                     """
@@ -1899,9 +2218,10 @@ def listar_localidadcaserio(request):
             dic_response.update(
                 {"message": "Error al listar los LocalidadCaserio", "data": str(e)}
             )
-            return JsonResponse(dic_response, status=500)   
-    
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+            return JsonResponse(dic_response, status=500)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["POST"])
 @transaction.atomic
@@ -1916,27 +2236,32 @@ def crear_localidadcaserio(request):
 
     if request.method == "POST":
         try:
-            
+
             data = json.loads(request.body)
-            data["estado"] = 1 
+            data["estado"] = 1
             data["fecha_creacion"] = datetime.now()
             data["fecha_modificacion"] = datetime.now()
 
             serializer = LocalidadCaserioSerializer(data=data)
 
             if serializer.is_valid():
-            
+
                 with connection.cursor() as cursor:
 
                     nombre = data["nombre"]
-                    
+
                     cursor.execute(
-                        "SELECT nombre FROM LocalidadCaserio WHERE (nombre='{0}') and estado_id IN (1, 2)".format(nombre)
+                        "SELECT nombre FROM LocalidadCaserio WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
+                            nombre
+                        )
                     )
 
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe una localidad - caserio con el mismo nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe una localidad - caserio con el mismo nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
                 cursor.close()
@@ -1947,7 +2272,7 @@ def crear_localidadcaserio(request):
                         "status": "success",
                         "message_user": "Localidad - Caserio creado exitosamente",
                         "message": "Localidad - Caserio creado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
                 return JsonResponse(dic_response, status=201)
@@ -1963,7 +2288,8 @@ def crear_localidadcaserio(request):
                 {"message_user": "Error inesperado", "data": {"error": str(e)}}
             )
             return JsonResponse(dic_response, status=500)
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["PUT"])
 @transaction.atomic
@@ -1978,16 +2304,18 @@ def actualizar_localidadcaserio(request, id):
 
     if request.method == "PUT":
         try:
-            
+
             data = json.loads(request.body)
-            
+
             data["fecha_modificacion"] = datetime.now()
 
             try:
-                queryset = LocalidadCaserio.objects.using('default').get(id=id)
+                queryset = LocalidadCaserio.objects.using("default").get(id=id)
             except LocalidadCaserio.DoesNotExist:
-                
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
 
             serializer = LocalidadCaserioSerializer(queryset, data=data)
 
@@ -1997,11 +2325,18 @@ def actualizar_localidadcaserio(request, id):
 
                     nombre = data["nombre"]
                     estado = data["estado"]
-                    
-                    cursor.execute("SELECT nombre FROM LocalidadCaserio WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(nombre, estado, id))
+
+                    cursor.execute(
+                        "SELECT nombre FROM LocalidadCaserio WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
+                            nombre, estado, id
+                        )
+                    )
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
-                            {"message_user": "Ya existe una localidad - caserio con el mismo nombre", "message": "Ya hay un dato existente."}
+                            {
+                                "message_user": "Ya existe una localidad - caserio con el mismo nombre",
+                                "message": "Ya hay un dato existente.",
+                            }
                         )
                         return JsonResponse(dic_response, status=400)
 
@@ -2013,7 +2348,7 @@ def actualizar_localidadcaserio(request, id):
                         "status": "success",
                         "message_user": "Localidad - Caserio actualizado exitosamente",
                         "message": "Localidad - Caserio actualizado exitosamente",
-                        "data": serializer.data
+                        "data": serializer.data,
                     }
                 )
                 return JsonResponse(dic_response, status=200)
@@ -2022,16 +2357,18 @@ def actualizar_localidadcaserio(request, id):
                     "message_user": "Datos inválidos.",
                     "data": serializer.errors,
                 }
-            )   
+            )
             return JsonResponse(dic_response, status=400)
         except Exception as e:
-            logger.error(f"Error inesperado al actualizar la localidad - caserio: {str(e)}")
+            logger.error(
+                f"Error inesperado al actualizar la localidad - caserio: {str(e)}"
+            )
             dic_response.update(
                 {"message_user": "Error inesperado", "data": {"error": str(e)}}
             )
             return JsonResponse(dic_response, status=500)
-        
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
 
 @api_view(["DELETE"])
@@ -2048,14 +2385,14 @@ def eliminar_localidadcaserio(request, id):
     if request.method == "DELETE":
         try:
 
-            data = {"estado": 3}        
+            data = {"estado": 3}
 
             try:
-                queryset = LocalidadCaserio.objects.using('default').get(id=id)
+                queryset = LocalidadCaserio.objects.using("default").get(id=id)
 
-                queryset.estado = Estado.objects.using('default').get(id=data["estado"])
+                queryset.estado = Estado.objects.using("default").get(id=data["estado"])
                 queryset.fecha_modificacion = datetime.now()
-                
+
                 queryset.save()
 
                 serializer = LocalidadCaserioSerializer(queryset)
@@ -2073,11 +2410,13 @@ def eliminar_localidadcaserio(request, id):
                 return JsonResponse(dic_response, status=200)
 
             except LocalidadCaserio.DoesNotExist:
-                return JsonResponse(dic_response, safe=False, status=status.HTTP_404_NOT_FOUND)
+                return JsonResponse(
+                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
+                )
         except Exception as e:
-            logger.error(f"Error inesperado al eliminar la localidad - caserio: {str(e)}")
+            logger.error(
+                f"Error inesperado al eliminar la localidad - caserio: {str(e)}"
+            )
             dic_response["message"] = "Error inesperado"
             return JsonResponse(dic_response, status=500)
-    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
-
-
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
