@@ -2420,3 +2420,6 @@ def eliminar_localidadcaserio(request, id):
             dic_response["message"] = "Error inesperado"
             return JsonResponse(dic_response, status=500)
     return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
+
+#
