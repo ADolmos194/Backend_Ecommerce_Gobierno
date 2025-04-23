@@ -78,6 +78,56 @@ def listar_tipoproducto(request):
 
     return JsonResponse([], safe=False, status=status.HTTP_200_OK)
 
+api_view(['GET'])
+@transaction.atomic
+def listar_tipoproducto_activo(request):
+    
+    dic_response = {
+        "code": 400,
+        "status": "error",
+        "message": "Tipo de productos activos no encontradas",
+        "message_user": "Tipo de productos activos no encontradas",
+        "data": [],
+    }
+
+    if request.method == "GET":
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        nombre,
+                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                    FROM TipoProducto
+                    WHERE estado_id IN (1)
+                    ORDER BY id DESC
+                    """
+                )
+                dic_tipoproducto_activo = ConvertirQueryADiccionarioDato(cursor)
+                cursor.close()
+
+            dic_response.update(
+                {
+                    "code": 200,
+                    "status": "success",
+                    "message_user": "Tipo de productos acitovos obtenidos correctamente",
+                    "message": "Tipo de productos activos obtenidos correctamente",
+                    "data": dic_tipoproducto_activo,
+                }
+            )
+            return JsonResponse(dic_response, status=200)
+
+        except DatabaseError as e:
+            logger.error(f"Error al listar el tipo de productos activos: {str(e)}")
+            dic_response.update(
+                {"message": "Error al listar el tipo de productos activos", "data": str(e)}
+            )
+            return JsonResponse(dic_response, status=500)
+
+    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+
 api_view(['POST'])
 @transaction.atomic
 def crear_tipoproducto(request):
@@ -279,12 +329,12 @@ def listar_producto(request):
                         p.nombre,
                         p.tipoproducto_id,
                         tp.nombre as nombre_tipoproducto,
-                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(p.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(p.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Producto p
                     LEFT JOIN TipoProducto tp ON p.tipoproducto_id = tp.id
-                    WHERE estado_id IN (1, 2)
-                    ORDER BY id DESC
+                    WHERE p.estado_id IN (1, 2)
+                    ORDER BY p.id DESC
                     """
                 )
                 dic_producto = ConvertirQueryADiccionarioDato(cursor)

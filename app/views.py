@@ -2191,12 +2191,12 @@ def listar_localidadcaserio(request):
                         l.distrito_id,
                         d.nombre as nombre_distrito,
                         l.estado_id,
-                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(l.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(l.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM LocalidadCaserio l
                     LEFT JOIN Distrito d ON l.distrito_id = d.id
-                    WHERE estado_id IN (1, 2)
-                    ORDER BY id DESC
+                    WHERE l.estado_id IN (1, 2)
+                    ORDER BY l.id DESC
                     """
                 )
                 dic_localidadcaserio = ConvertirQueryADiccionarioDato(cursor)
