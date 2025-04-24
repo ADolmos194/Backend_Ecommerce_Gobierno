@@ -4,8 +4,11 @@ from django.urls import path, include
 from django.conf import settings
 from django.conf.urls.static import static
 
+from backend.view import home
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('', home),
     path('app/', include('app.urls')),
     path('registros/', include('app_registros.urls')),
     path('categorias/', include('app_categorias.urls')),
