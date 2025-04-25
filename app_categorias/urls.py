@@ -13,7 +13,7 @@ urlpatterns = [
     path('tiposproductosactivos/', listar_tipoproducto_activo, name='listar_tipoproducto_activo'),
     
     path('tipoproducto/crear/', crear_tipoproducto, name='crear_tipoproducto'),
-    path('tipoproducto/actualizar/<int:id>/', actualizar_producto, name='actualizar_producto'),
+    path('tipoproducto/actualizar/<int:id>/', actualizar_tipoproducto, name='actualizar_tipoproducto'),
     path('tipoproducto/eliminar/<int:id>/', eliminar_tipoproducto, name='eliminar_tipoproducto'),
     
     path('producto/', listar_producto, name='listar_producto'),

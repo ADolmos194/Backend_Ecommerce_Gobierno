@@ -48,6 +48,7 @@ def listar_tipoproducto(request):
                     SELECT
                         id,
                         nombre,
+                        estado_id,
                         TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
                         TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM TipoProducto
@@ -78,7 +79,7 @@ def listar_tipoproducto(request):
 
     return JsonResponse([], safe=False, status=status.HTTP_200_OK)
 
-api_view(['GET'])
+@api_view(['GET'])
 @transaction.atomic
 def listar_tipoproducto_activo(request):
     
@@ -128,10 +129,10 @@ def listar_tipoproducto_activo(request):
 
     return JsonResponse([], safe=False, status=status.HTTP_200_OK)
 
-api_view(['POST'])
+
+@api_view(['POST'])
 @transaction.atomic
 def crear_tipoproducto(request):
-    
     dic_response = {
         "code": 400,
         "status": "error",
@@ -190,7 +191,7 @@ def crear_tipoproducto(request):
     
     return JsonResponse([], safe=False, status=status.HTTP_200_OK)
 
-api_view(['PUT'])
+@api_view(['PUT'])
 @transaction.atomic
 def actualizar_tipoproducto(request, id):
     dic_response = {
@@ -329,6 +330,9 @@ def listar_producto(request):
                         p.nombre,
                         p.tipoproducto_id,
                         tp.nombre as nombre_tipoproducto,
+                        p.codigo,
+                        p.serie,
+                        p.estado_id,
                         TO_CHAR(p.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
                         TO_CHAR(p.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Producto p
@@ -360,10 +364,9 @@ def listar_producto(request):
 
     return JsonResponse([], safe=False, status=status.HTTP_200_OK)
 
-api_view(['POST'])
+@api_view(['POST'])
 @transaction.atomic
 def crear_producto(request):
-    
     dic_response = {
         "code": 400,
         "status": "error",
@@ -422,7 +425,7 @@ def crear_producto(request):
     
     return JsonResponse([], safe=False, status=status.HTTP_200_OK)
 
-api_view(['PUT'])
+@api_view(['PUT'])
 @transaction.atomic
 def actualizar_producto(request, id):
     dic_response = {

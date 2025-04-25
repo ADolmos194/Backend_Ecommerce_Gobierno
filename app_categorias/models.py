@@ -18,6 +18,8 @@ class TipoProducto(models.Model):
 class Producto(models.Model):
     tipoproducto = models.ForeignKey(TipoProducto, on_delete=models.CASCADE)
     nombre = models.CharField(max_length=100, null=True, blank=True)
+    codigo = models.CharField(max_length=50, null=True, blank=True)
+    serie = models.CharField(max_length=100, null=True, blank=True)
     estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
