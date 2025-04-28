@@ -57,7 +57,6 @@ class ConversionUnidadMedida(models.Model):
     def __str__(self):
         return '%s' % (self.nombre)
 
-
 class Mercado(models.Model):
 
     nombre = models.CharField(max_length=100, null=True, blank=True)

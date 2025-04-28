@@ -26,6 +26,7 @@ class PrecioCiudades(models.Model):
     serie = models.CharField(max_length=100, null=True, blank=True)
     producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
     conversionunidadmedida = models.ForeignKey(ConversionUnidadMedida, on_delete=models.CASCADE)
+    valor_anual = models.FloatField(null=True, blank=True)
     valor_enero = models.FloatField(null=True, blank=True)
     valor_febrero = models.FloatField(null=True, blank=True)
     valor_marzo = models.FloatField(null=True, blank=True)

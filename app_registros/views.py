@@ -4,6 +4,7 @@ from django.http import JsonResponse
 
 from rest_framework import status
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -11,6 +12,7 @@ from django.db import connection, transaction, DatabaseError
 
 from .serializer import *
 from .models import *
+
 
 logger = logging.getLogger(__name__)
 
@@ -56,8 +58,8 @@ def listar_PreciosMercadoMayoristaMinorista(request):
                         pmmm.precio_promedio,
                         pmmm.precio_maximo,
                         pmmm.estado_id,
-                        TO_CHAR(pmmm.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(pmmm.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(pmmm.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(pmmm.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM PreciosMercadoMayoristaMinorista pmmm
                     LEFT JOIN Producto p ON p.id = pmmm.producto_id
                     LEFT JOIN UnidadMedida um ON um.id = pmmm.unidadmedida_id
@@ -103,8 +105,8 @@ def crear_PreciosMercadoMayoristaMinorista(request):
 
             data = json.loads(request.body)
             data["estado"] = 1
-            data["fecha_creacion"] = datetime.now()
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_creacion"] = datetime.now(ZoneInfo("America/Lima"))
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             serializer = PreciosMercadoMayoristaMinoristaSerializer(data=data)
 
@@ -178,7 +180,7 @@ def actualizar_PreciosMercadoMayoristaMinorista(request, id):
 
             data = json.loads(request.body)
 
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             try:
                 queryset = PreciosMercadoMayoristaMinorista.objects.using("default").get(id=id)
@@ -266,7 +268,7 @@ def eliminar_PreciosMercadoMayoristaMinorista(request, id):
                 queryset = PreciosMercadoMayoristaMinorista.objects.using("default").get(id=id)
 
                 queryset.estado = Estado.objects.using("default").get(id=data["estado"])
-                queryset.fecha_modificacion = datetime.now()
+                queryset.fecha_modificacion = datetime.now(ZoneInfo("America/Lima"))
 
                 queryset.save()
 
@@ -324,6 +326,7 @@ def listar_PrecioCiudades(request):
                         p.nombre as nombre_producto,
                         pc.conversionunidadmedida_id,
                         cum.nombre as nombre_conversionunidadmedida,
+                        pc.valor_anual,
                         pc.valor_enero,
                         pc.valor_febrero,
                         pc.valor_marzo,
@@ -337,8 +340,8 @@ def listar_PrecioCiudades(request):
                         pc.valor_noviembre,
                         pc.valor_diciembre,
                         pc.estado_id,
-                        TO_CHAR(pc.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(pc.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(pc.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(pc.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM PrecioCiudades pc
                     LEFT JOIN Producto p ON p.id = pc.producto_id
                     LEFT JOIN ConversionUnidadMedida cum ON cum.id = pc.conversionunidadmedida_id
@@ -382,33 +385,12 @@ def crear_PrecioCiudades(request):
 
             data = json.loads(request.body)
             data["estado"] = 1
-            data["fecha_creacion"] = datetime.now()
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_creacion"] = datetime.now(ZoneInfo("America/Lima"))
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             serializer = PrecioCiudadesSerializer(data=data)
 
             if serializer.is_valid():
-
-                with connection.cursor() as cursor:
-
-                    conversionunidadmedida_id = data["conversionunidadmedida"]
-
-                    cursor.execute(
-                        "SELECT conversionunidadmedida_id FROM PrecioCiudades WHERE (conversionunidadmedida_id='{0}') and estado_id IN (1, 2)".format(
-                            conversionunidadmedida_id
-                        )
-                    )
-
-                    if len(cursor.fetchall()) > 0:
-                        dic_response.update(
-                            {
-                                "message_user": "Ya existe un Precio de las Ciudades con el mismo producto y unidad de medida",
-                                "message": "Ya hay un dato existente.",
-                            }
-                        )
-                        return JsonResponse(dic_response, status=400)
-
-                    cursor.close()
 
                 serializer.save()
 
@@ -457,7 +439,7 @@ def actualizar_PrecioCiudades(request, id):
 
             data = json.loads(request.body)
 
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             try:
                 queryset = PrecioCiudades.objects.using("default").get(id=id)
@@ -470,27 +452,6 @@ def actualizar_PrecioCiudades(request, id):
             serializer = PrecioCiudadesSerializer(queryset, data=data)
 
             if serializer.is_valid():
-
-                with connection.cursor() as cursor:
-
-                    conversionunidadmedida_id = data["conversionunidadmedida"]
-                    estado = data["estado"]
-
-                    cursor.execute(
-                        "SELECT conversionunidadmedida_id FROM PrecioCiudades WHERE (conversionunidadmedida_id='{0}') and estado_id = {1} and id <> {2}".format(
-                            conversionunidadmedida_id, estado, id
-                        )
-                    )
-                    if len(cursor.fetchall()) > 0:
-                        dic_response.update(
-                            {
-                                "message_user": "Ya existe un Precio de las Ciudades con el mismo producto y unidad de medida",
-                                "message": "Ya hay un dato existente.",
-                            }
-                        )
-                        return JsonResponse(dic_response, status=400)
-
-                    cursor.close()
 
                 serializer.save()
 
@@ -544,7 +505,7 @@ def eliminar_PrecioCiudades(request, id):
                 queryset = PrecioCiudades.objects.using("default").get(id=id)
 
                 queryset.estado = Estado.objects.using("default").get(id=data["estado"])
-                queryset.fecha_modificacion = datetime.now()
+                queryset.fecha_modificacion = datetime.now(ZoneInfo("America/Lima"))
 
                 queryset.save()
 

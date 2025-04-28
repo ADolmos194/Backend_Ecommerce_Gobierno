@@ -4,6 +4,7 @@ from django.http import JsonResponse
 
 from rest_framework import status
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -47,8 +48,8 @@ def listar_estado(request):
                     SELECT
                         id,
                         nombre,
-                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Estado
                     WHERE id IN (1, 2)
                     ORDER BY id DESC
@@ -102,8 +103,8 @@ def listar_unidadmedida(request):
                         id,
                         nombre,
                         estado_id,
-                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM UnidadMedida
                     WHERE estado_id IN (1, 2)
                     ORDER BY id DESC
@@ -150,8 +151,8 @@ def crear_unidadmedida(request):
 
             data = json.loads(request.body)
             data["estado"] = 1
-            data["fecha_creacion"] = datetime.now()
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_creacion"] = datetime.now(ZoneInfo("America/Lima"))
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             serializer = UnidadMedidaSerializer(data=data)
 
@@ -227,7 +228,7 @@ def actualizar_unidadmedida(request, id):
 
             data = json.loads(request.body)
 
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             try:
                 queryset = UnidadMedida.objects.using("default").get(id=id)
@@ -318,7 +319,7 @@ def eliminar_unidadmedida(request, id):
                 queryset = UnidadMedida.objects.using("default").get(id=id)
 
                 queryset.estado = Estado.objects.using("default").get(id=data["estado"])
-                queryset.fecha_modificacion = datetime.now()
+                queryset.fecha_modificacion = datetime.now(ZoneInfo("America/Lima"))
 
                 queryset.save()
 
@@ -371,8 +372,8 @@ def listar_conversionunidadmedida(request):
                         id,
                         nombre,
                         estado_id,
-                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM ConversionUnidadMedida 
                     WHERE estado_id IN (1, 2)
                     ORDER BY id DESC
@@ -404,6 +405,60 @@ def listar_conversionunidadmedida(request):
 
     return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
+@api_view(["GET"])
+@transaction.atomic
+def listar_conversionunidadmedida_activos(request):
+    dic_response = {
+        "code": 400,
+        "status": "error",
+        "message": "Conversiones Unidad de medida activas no encontradas",
+        "message_user": "Conversiones Unidad de medida activas no encontradas",
+        "data": [],
+    }
+
+    if request.method == "GET":
+        try:
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT
+                        id,
+                        nombre,
+                        estado_id,
+                        TO_CHAR(fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                    FROM ConversionUnidadMedida 
+                    WHERE estado_id IN (1)
+                    ORDER BY id DESC
+                    """
+                )
+                dic_conversionunidadmedida_activa = ConvertirQueryADiccionarioDato(cursor)
+                cursor.close()
+
+            dic_response.update(
+                {
+                    "code": 200,
+                    "status": "success",
+                    "message_user": "Conversiones Unidad de medida activas obtenidas correctamente",
+                    "message": "Conversiones Unidad de medida activas obtenidas correctamente",
+                    "data": dic_conversionunidadmedida_activa,
+                }
+            )
+            return JsonResponse(dic_response, status=200)
+
+        except DatabaseError as e:
+            logger.error(f"Error al listar las Conversiones unidad de medida activas: {str(e)}")
+            dic_response.update(
+                {
+                    "message": "Error al listar las Conversiones unidad de medida activas",
+                    "data": str(e),
+                }
+            )
+            return JsonResponse(dic_response, status=500)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["POST"])
 @transaction.atomic
@@ -422,8 +477,8 @@ def crear_conversionunidadmedida(request):
 
             data = json.loads(request.body)
             data["estado"] = 1
-            data["fecha_creacion"] = datetime.now()
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_creacion"] = datetime.now(ZoneInfo("America/Lima"))
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             serializer = ConversionUnidadMedidaSerializer(data=data)
 
@@ -501,7 +556,7 @@ def actualizar_conversionunidadmedida(request, id):
 
             data = json.loads(request.body)
 
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             try:
                 queryset = ConversionUnidadMedida.objects.using("default").get(id=id)
@@ -592,7 +647,7 @@ def eliminar_conversionunidadmedida(request, id):
                 queryset = ConversionUnidadMedida.objects.using("default").get(id=id)
 
                 queryset.estado = Estado.objects.using("default").get(id=data["estado"])
-                queryset.fecha_modificacion = datetime.now()
+                queryset.fecha_modificacion = datetime.now(ZoneInfo("America/Lima"))
 
                 queryset.save()
 
@@ -647,8 +702,8 @@ def listar_mercados(request):
                         id,
                         nombre,
                         estado_id,
-                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Mercado 
                     WHERE estado_id IN (1, 2)
                     ORDER BY id DESC
@@ -695,8 +750,8 @@ def crear_mercado(request):
 
             data = json.loads(request.body)
             data["estado"] = 1
-            data["fecha_creacion"] = datetime.now()
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_creacion"] = datetime.now(ZoneInfo("America/Lima"))
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             serializer = MercadoSerializer(data=data)
 
@@ -772,7 +827,7 @@ def actualizar_mercado(request, id):
 
             data = json.loads(request.body)
 
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             try:
                 queryset = Mercado.objects.using("default").get(id=id)
@@ -861,7 +916,7 @@ def eliminar_mercado(request, id):
                 queryset = Mercado.objects.using("default").get(id=id)
 
                 queryset.estado = Estado.objects.using("default").get(id=data["estado"])
-                queryset.fecha_modificacion = datetime.now()
+                queryset.fecha_modificacion = datetime.now(ZoneInfo("America/Lima"))
 
                 queryset.save()
 
@@ -913,8 +968,8 @@ def listar_paises(request):
                         id,
                         nombre,
                         estado_id,
-                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Pais 
                     WHERE estado_id IN (1, 2)
                     ORDER BY id DESC
@@ -963,8 +1018,8 @@ def listar_paises_activos(request):
                         id,
                         nombre,
                         estado_id,
-                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Pais 
                     WHERE estado_id IN (1)
                     ORDER BY id DESC
@@ -1009,8 +1064,8 @@ def crear_pais(request):
 
             data = json.loads(request.body)
             data["estado"] = 1
-            data["fecha_creacion"] = datetime.now()
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_creacion"] = datetime.now(ZoneInfo("America/Lima"))
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             serializer = PaisSerializer(data=data)
 
@@ -1085,7 +1140,7 @@ def actualizar_pais(request, id):
 
             data = json.loads(request.body)
 
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             try:
                 queryset = Pais.objects.using("default").get(id=id)
@@ -1173,7 +1228,7 @@ def eliminar_pais(request, id):
                 queryset = Pais.objects.using("default").get(id=id)
 
                 queryset.estado = Estado.objects.using("default").get(id=data["estado"])
-                queryset.fecha_modificacion = datetime.now()
+                queryset.fecha_modificacion = datetime.now(ZoneInfo("America/Lima"))
 
                 queryset.save()
 
@@ -1228,8 +1283,8 @@ def listar_departamentos(request):
                         d.pais_id,
                         p.nombre as nombre_pais,
                         d.estado_id,
-                        TO_CHAR(d.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(d.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(d.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(d.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Departamento d
                     LEFT JOIN Pais p ON d.pais_id = p.id
                     WHERE d.estado_id IN (1, 2)
@@ -1282,8 +1337,8 @@ def listar_departamentos_activos(request):
                         d.pais_id,
                         p.nombre as nombre_pais,
                         d.estado_id,
-                        TO_CHAR(d.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(d.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(d.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(d.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Departamento d
                     LEFT JOIN Pais p ON d.pais_id = p.id
                     WHERE d.estado_id IN (1)
@@ -1331,8 +1386,8 @@ def crear_departamento(request):
 
             data = json.loads(request.body)
             data["estado"] = 1
-            data["fecha_creacion"] = datetime.now()
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_creacion"] = datetime.now(ZoneInfo("America/Lima"))
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             serializer = DepartamentoSerializer(data=data)
 
@@ -1406,7 +1461,7 @@ def actualizar_departamento(request, id):
 
             data = json.loads(request.body)
 
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             try:
                 queryset = Departamento.objects.using("default").get(id=id)
@@ -1495,7 +1550,7 @@ def eliminar_departamento(request, id):
                 queryset = Departamento.objects.using("default").get(id=id)
 
                 queryset.estado = Estado.objects.using("default").get(id=data["estado"])
-                queryset.fecha_modificacion = datetime.now()
+                queryset.fecha_modificacion = datetime.now(ZoneInfo("America/Lima"))
 
                 queryset.save()
 
@@ -1550,8 +1605,8 @@ def listar_provincias(request):
                         p.departamento_id,
                         d.nombre as nombre_departamento,
                         p.estado_id,
-                        TO_CHAR(p.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(p.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(p.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(p.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Provincia p
                     LEFT JOIN Departamento d ON p.departamento_id = d.id
                     WHERE p.estado_id IN (1, 2)
@@ -1604,8 +1659,8 @@ def listar_provincias_activos(request):
                         p.departamento_id,
                         d.nombre as nombre_departamento,
                         p.estado_id,
-                        TO_CHAR(p.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(p.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(p.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(p.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Provincia p
                     LEFT JOIN Departamento d ON p.departamento_id = d.id
                     WHERE p.estado_id IN (1)
@@ -1652,8 +1707,8 @@ def crear_provincia(request):
 
             data = json.loads(request.body)
             data["estado"] = 1
-            data["fecha_creacion"] = datetime.now()
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_creacion"] = datetime.now(ZoneInfo("America/Lima"))
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             serializer = ProvinciaSerializer(data=data)
 
@@ -1728,7 +1783,7 @@ def actualizar_provincia(request, id):
 
             data = json.loads(request.body)
 
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             try:
                 queryset = Provincia.objects.using("default").get(id=id)
@@ -1815,7 +1870,7 @@ def eliminar_provincia(request, id):
                 queryset = Provincia.objects.using("default").get(id=id)
 
                 queryset.estado = Estado.objects.using("default").get(id=data["estado"])
-                queryset.fecha_modificacion = datetime.now()
+                queryset.fecha_modificacion = datetime.now(ZoneInfo("America/Lima"))
 
                 queryset.save()
 
@@ -1870,8 +1925,8 @@ def listar_distritos(request):
                         d.provincia_id,
                         p.nombre as nombre_provincia,
                         d.estado_id,
-                        TO_CHAR(d.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(d.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(d.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(d.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Distrito d
                     LEFT JOIN Provincia p ON d.provincia_id = p.id
                     WHERE d.estado_id IN (1, 2)
@@ -1925,8 +1980,8 @@ def listar_distritos_activos(request):
                         d.provincia_id,
                         p.nombre as nombre_provincia,
                         d.estado_id,
-                        TO_CHAR(d.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(d.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(d.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(d.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Distrito d
                     LEFT JOIN Provincia p ON d.provincia_id = p.id
                     WHERE d.estado_id IN (1)
@@ -1973,8 +2028,8 @@ def crear_distrito(request):
 
             data = json.loads(request.body)
             data["estado"] = 1
-            data["fecha_creacion"] = datetime.now()
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_creacion"] = datetime.now(ZoneInfo("America/Lima"))
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             serializer = DistritoSerializer(data=data)
 
@@ -2049,7 +2104,7 @@ def actualizar_distrito(request, id):
 
             data = json.loads(request.body)
 
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             try:
                 queryset = Distrito.objects.using("default").get(id=id)
@@ -2137,7 +2192,7 @@ def eliminar_distrito(request, id):
                 queryset = Distrito.objects.using("default").get(id=id)
 
                 queryset.estado = Estado.objects.using("default").get(id=data["estado"])
-                queryset.fecha_modificacion = datetime.now()
+                queryset.fecha_modificacion = datetime.now(ZoneInfo("America/Lima"))
 
                 queryset.save()
 
@@ -2191,8 +2246,8 @@ def listar_localidadcaserio(request):
                         l.distrito_id,
                         d.nombre as nombre_distrito,
                         l.estado_id,
-                        TO_CHAR(l.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(l.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(l.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(l.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM LocalidadCaserio l
                     LEFT JOIN Distrito d ON l.distrito_id = d.id
                     WHERE l.estado_id IN (1, 2)
@@ -2239,8 +2294,8 @@ def crear_localidadcaserio(request):
 
             data = json.loads(request.body)
             data["estado"] = 1
-            data["fecha_creacion"] = datetime.now()
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_creacion"] = datetime.now(ZoneInfo("America/Lima"))
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             serializer = LocalidadCaserioSerializer(data=data)
 
@@ -2307,7 +2362,7 @@ def actualizar_localidadcaserio(request, id):
 
             data = json.loads(request.body)
 
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             try:
                 queryset = LocalidadCaserio.objects.using("default").get(id=id)
@@ -2391,7 +2446,7 @@ def eliminar_localidadcaserio(request, id):
                 queryset = LocalidadCaserio.objects.using("default").get(id=id)
 
                 queryset.estado = Estado.objects.using("default").get(id=data["estado"])
-                queryset.fecha_modificacion = datetime.now()
+                queryset.fecha_modificacion = datetime.now(ZoneInfo("America/Lima"))
 
                 queryset.save()
 

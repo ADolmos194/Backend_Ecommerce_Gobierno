@@ -4,6 +4,7 @@ from django.http import JsonResponse
 
 from rest_framework import status
 from datetime import datetime
+from zoneinfo import ZoneInfo
 
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
@@ -49,8 +50,8 @@ def listar_tipoproducto(request):
                         id,
                         nombre,
                         estado_id,
-                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM TipoProducto
                     WHERE estado_id IN (1, 2)
                     ORDER BY id DESC
@@ -99,8 +100,9 @@ def listar_tipoproducto_activo(request):
                     SELECT
                         id,
                         nombre,
-                        TO_CHAR(fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        estado_id,
+                        TO_CHAR(fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM TipoProducto
                     WHERE estado_id IN (1)
                     ORDER BY id DESC
@@ -144,8 +146,8 @@ def crear_tipoproducto(request):
         try:
             data = json.loads(request.body)
             data["estado"] = 1 
-            data["fecha_creacion"] = datetime.now()
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_creacion"] = datetime.now(ZoneInfo("America/Lima"))
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             serializer = TipoProductoSerializer(data=data)
 
@@ -207,7 +209,7 @@ def actualizar_tipoproducto(request, id):
             
             data = json.loads(request.body)
             
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             try:
                 queryset = TipoProducto.objects.using('default').get(id=id)
@@ -279,7 +281,7 @@ def eliminar_tipoproducto(request, id):
                 queryset = TipoProducto.objects.using('default').get(id=id)
 
                 queryset.estado = Estado.objects.using('default').get(id=data["estado"])
-                queryset.fecha_modificacion = datetime.now()
+                queryset.fecha_modificacion = datetime.now(ZoneInfo("America/Lima"))
                 
                 queryset.save()
 
@@ -333,8 +335,8 @@ def listar_producto(request):
                         p.codigo,
                         p.serie,
                         p.estado_id,
-                        TO_CHAR(p.fecha_creacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(p.fecha_modificacion, 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                        TO_CHAR(p.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(p.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
                     FROM Producto p
                     LEFT JOIN TipoProducto tp ON p.tipoproducto_id = tp.id
                     WHERE p.estado_id IN (1, 2)
@@ -378,8 +380,8 @@ def crear_producto(request):
         try:
             data = json.loads(request.body)
             data["estado"] = 1 
-            data["fecha_creacion"] = datetime.now()
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_creacion"] = datetime.now(ZoneInfo("America/Lima"))
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             serializer = ProductoSerializer(data=data)
 
@@ -441,7 +443,7 @@ def actualizar_producto(request, id):
             
             data = json.loads(request.body)
             
-            data["fecha_modificacion"] = datetime.now()
+            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             try:
                 queryset = Producto.objects.using('default').get(id=id)
@@ -513,7 +515,7 @@ def eliminar_producto(request, id):
                 queryset = Producto.objects.using('default').get(id=id)
 
                 queryset.estado = Estado.objects.using('default').get(id=data["estado"])
-                queryset.fecha_modificacion = datetime.now()
+                queryset.fecha_modificacion = datetime.now(ZoneInfo("America/Lima"))
                 
                 queryset.save()
 

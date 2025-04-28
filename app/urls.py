@@ -19,6 +19,8 @@ urlpatterns = [
     
     #---> URL Conversion Unidad Medida
     path('conversionunidadmedida/', listar_conversionunidadmedida, name='listar_conversionunidadmedida'),
+    path('conversionunidadmedidaactivos/', listar_conversionunidadmedida_activos, name='listar_conversionunidadmedida_activos'),
+    
     path('conversionunidadmedida/crear/', crear_conversionunidadmedida, name='crear_conversionunidadmedida'),
     path('conversionunidadmedida/actualizar/<int:id>/', actualizar_conversionunidadmedida, name='actualizar_conversionunidadmedida'),
     path('conversionunidadmedida/eliminar/<int:id>/', eliminar_conversionunidadmedida, name='eliminar_conversionunidadmedida'),
