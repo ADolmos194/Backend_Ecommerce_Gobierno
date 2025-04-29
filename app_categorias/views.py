@@ -366,6 +366,61 @@ def listar_producto(request):
 
     return JsonResponse([], safe=False, status=status.HTTP_200_OK)
 
+
+@api_view(['GET'])
+@transaction.atomic
+def listar_producto_activo(request):
+    dic_response = {
+        "code": 400,
+        "status": "error",
+        "message": "Producto activos no encontradas",
+        "message_user": "Producto activos no encontradas",
+        "data": [],
+    }
+
+    if request.method == "GET":
+        try:
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT
+                        p.id,
+                        p.nombre,
+                        p.codigo,
+                        p.serie,
+                        p.estado_id,
+                        TO_CHAR(p.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
+                        TO_CHAR(p.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
+                    FROM Producto p
+                    LEFT JOIN TipoProducto tp ON p.tipoproducto_id = tp.id
+                    WHERE p.estado_id IN (1)
+                    ORDER BY p.id DESC
+                    """
+                )
+                dic_producto_activo = ConvertirQueryADiccionarioDato(cursor)
+                cursor.close()
+
+            dic_response.update(
+                {
+                    "code": 200,
+                    "status": "success",
+                    "message_user": "Producto acitovos obtenidos correctamente",
+                    "message": "Producto activos obtenidos correctamente",
+                    "data": dic_producto_activo,
+                }
+            )
+            return JsonResponse(dic_response, status=200)
+
+        except DatabaseError as e:
+            logger.error(f"Error al listar el producto activos: {str(e)}")
+            dic_response.update(
+                {"message": "Error al listar el producto activos", "data": str(e)}
+            )
+            return JsonResponse(dic_response, status=500)
+
+    return JsonResponse([], safe=False, status=status.HTTP_200_OK)
+
+
 @api_view(['POST'])
 @transaction.atomic
 def crear_producto(request):
