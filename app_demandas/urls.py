@@ -9,10 +9,10 @@ from .views import *
 # Definición de las rutas URL para la API de clientes
 urlpatterns = [
 
+    # Rutas para la API de DEMANDA PRODUCTOS AGROPECUARIOS
     path("demandaproductosagropecuarios/", listar_demandaproductosagropecuarios, name="listar_demandaproductosagropecuarios"),
     path("demandaproductosagropecuarios/crear/", crear_demandaproductosagropecuarios, name="crear_demandaproductosagropecuarios"),
     path("demandaproductosagropecuarios/actualizar/<int:id>/", actualizar_demandaproductosagropecuarios, name="actualizar_demandaproductosagropecuarios"),
     path("demandaproductosagropecuarios/eliminar/<int:id>/", eliminar_demandaproductosagropecuarios, name="eliminar_demandaproductosagropecuarios"),
-    
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

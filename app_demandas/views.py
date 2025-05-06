@@ -28,6 +28,7 @@ def ConvertirQueryADiccionarioDato(cursor):
     return [dict(zip(columna, fila)) for fila in cursor.fetchall()]
 
 
+
 @api_view(["GET"])
 @transaction.atomic
 def listar_demandaproductosagropecuarios(request):
@@ -53,6 +54,11 @@ def listar_demandaproductosagropecuarios(request):
                         di.nombre as nombre_distrito,
                         pr.nombre || '-' || di.nombre AS nombre_provincia_distrito,
                         d.fecha_publicacion,
+                        d.tipoproducto_id,
+                        tipro.nombre as nombre_tipoproducto,
+                        d.producto_id,
+                        pro.nombre as nombre_producto,
+                        d.url_imagen,
                         d.descripcion,
                         d.nota,
                         d.direccion,
@@ -65,6 +71,8 @@ def listar_demandaproductosagropecuarios(request):
                     FROM DemandaProductosAgropecuarios d
                     LEFT JOIN Provincia pr ON d.provincia_id = pr.id
                     LEFT JOIN Distrito di ON d.distrito_id = di.id
+                    LEFT JOIN Producto pro ON d.producto_id = pro.id
+                    LEFT JOIN TipoProducto tipro ON d.tipoproducto_id = tipro.id
                     WHERE d.estado_id IN (1, 2)
                     ORDER BY d.id DESC
                     """
@@ -280,5 +288,4 @@ def eliminar_demandaproductosagropecuarios(request, id):
             return JsonResponse(dic_response, status=500)
 
     return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
-
 

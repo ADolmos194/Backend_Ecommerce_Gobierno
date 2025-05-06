@@ -9,3 +9,7 @@ class DemandaProductosAgropecuariosSerializer(serializers.ModelSerializer):
 
         model = DemandaProductosAgropecuarios
         fields = "__all__"
+        
+        
+    
+
