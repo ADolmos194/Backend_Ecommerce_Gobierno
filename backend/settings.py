@@ -47,6 +47,7 @@ INSTALLED_APPS = [
     'rest_framework',
     'corsheaders',
     'app',
+    'app_autenticacion',
     'app_registros',
     'app_categorias',
     'app_ofertas',
@@ -54,7 +55,11 @@ INSTALLED_APPS = [
     'app_noticias',
 ]
 
-
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': (
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ),
+}
 
 
 MIDDLEWARE = [
@@ -153,3 +158,4 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 MEDIA_URL = '/imagenes/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'imagenes')
 
+AUTH_USER_MODEL = 'app.CustomUser'

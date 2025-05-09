@@ -28,10 +28,9 @@ def ConvertirQueryADiccionarioDato(cursor):
     return [dict(zip(columna, fila)) for fila in cursor.fetchall()]
 
 
-
 @api_view(["GET"])
 @transaction.atomic
-def listar_demandaproductosagropecuarios(request):
+def listar_demandaproductosagropecuarios(request, id):
     dic_response = {
         "code": 400,
         "status": "error",
@@ -42,7 +41,6 @@ def listar_demandaproductosagropecuarios(request):
 
     if request.method == "GET":
         try:
-
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
@@ -65,6 +63,8 @@ def listar_demandaproductosagropecuarios(request):
                         d.contacto,
                         d.telefono,
                         d.email,
+                        d.usuariosistema_id,
+                        us.usuario as nombre,
                         d.estado_id,
                         TO_CHAR(d.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
                         TO_CHAR(d.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
@@ -73,12 +73,14 @@ def listar_demandaproductosagropecuarios(request):
                     LEFT JOIN Distrito di ON d.distrito_id = di.id
                     LEFT JOIN Producto pro ON d.producto_id = pro.id
                     LEFT JOIN TipoProducto tipro ON d.tipoproducto_id = tipro.id
+                    LEFT JOIN UsuarioSistema us ON d.usuariosistema_id = us.id
                     WHERE d.estado_id IN (1, 2)
+                    AND d.usuariosistema_id = %s
                     ORDER BY d.id DESC
-                    """
+                    """,
+                    [id]
                 )
                 dic_demandaproductosagropecuarios = ConvertirQueryADiccionarioDato(cursor)
-                cursor.close()
 
             dic_response.update(
                 {
@@ -92,9 +94,7 @@ def listar_demandaproductosagropecuarios(request):
             return JsonResponse(dic_response, status=200)
 
         except DatabaseError as e:
-            logger.error(
-                f"Error al listar la demanda de productos agropecuarios: {str(e)}"
-            )
+            logger.error(f"Error al listar la demanda de productos agropecuarios: {str(e)}")
             dic_response.update(
                 {
                     "message": "Error al listar la demanda de productos agropecuarios",

@@ -9,6 +9,7 @@ from .models import (
     Departamento,
     Provincia,
     Distrito,
+    CustomUser
 )
 
 
@@ -71,3 +72,10 @@ class LocalidadCaserioSerializer(serializers.ModelSerializer):
 
         model = LocalidadCaserio
         fields = "__all__"
+
+
+class CustomUserSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = CustomUser
+        fields = '__all__'
+        
