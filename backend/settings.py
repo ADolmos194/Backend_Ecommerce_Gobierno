@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'app_categorias',
     'app_ofertas',
     'app_demandas',
-    'app_noticias',
+    'app_anuncios',
+    'app_maquinarias',
 ]
 
 REST_FRAMEWORK = {

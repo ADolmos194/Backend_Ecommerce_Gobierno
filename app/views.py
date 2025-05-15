@@ -163,10 +163,9 @@ def crear_unidadmedida(request):
                     nombre = data["nombre"]
 
                     cursor.execute(
-                        "SELECT nombre FROM UnidadMedida WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
-                            nombre
-                        )
+                        "SELECT nombre FROM UnidadMedida WHERE nombre = %s AND estado_id IN (1, 2)", [nombre]
                     )
+
 
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
@@ -248,9 +247,7 @@ def actualizar_unidadmedida(request, id):
                     estado = data["estado"]
 
                     cursor.execute(
-                        "SELECT nombre FROM UnidadMedida WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
-                            nombre, estado, id
-                        )
+                        "SELECT nombre FROM UnidadMedida WHERE nombre= %s AND estado_id = %s and id <> %s",[nombre, estado, id]
                     )
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
@@ -405,6 +402,7 @@ def listar_conversionunidadmedida(request):
 
     return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
+
 @api_view(["GET"])
 @transaction.atomic
 def listar_conversionunidadmedida_activos(request):
@@ -489,9 +487,7 @@ def crear_conversionunidadmedida(request):
                     nombre = data["nombre"]
 
                     cursor.execute(
-                        "SELECT nombre FROM ConversionUnidadMedida WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
-                            nombre
-                        )
+                        "SELECT nombre FROM ConversionUnidadMedida WHERE nombre = %s AND estado_id IN (1, 2)", [nombre]
                     )
 
                     if len(cursor.fetchall()) > 0:
@@ -576,10 +572,9 @@ def actualizar_conversionunidadmedida(request, id):
                     estado = data["estado"]
 
                     cursor.execute(
-                        "SELECT nombre FROM ConversionUnidadMedida WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
-                            nombre, estado, id
-                        )
+                        "SELECT nombre FROM ConversionUnidadMedida WHERE nombre= %s AND estado_id = %s and id <> %s",[nombre, estado, id]
                     )
+
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
                             {
@@ -762,9 +757,7 @@ def crear_mercado(request):
                     nombre = data["nombre"]
 
                     cursor.execute(
-                        "SELECT nombre FROM Mercado WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
-                            nombre
-                        )
+                        "SELECT nombre FROM Mercado WHERE nombre = %s AND estado_id IN (1, 2)", [nombre]
                     )
 
                     if len(cursor.fetchall()) > 0:
@@ -847,10 +840,9 @@ def actualizar_mercado(request, id):
                     estado = data["estado"]
 
                     cursor.execute(
-                        "SELECT nombre FROM Mercado WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
-                            nombre, estado, id
-                        )
+                        "SELECT nombre FROM Mercado WHERE nombre = %s AND estado_id = %s and id <> %", [nombre, estado, id]
                     )
+
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
                             {
@@ -1076,10 +1068,9 @@ def crear_pais(request):
                     nombre = data["nombre"]
 
                     cursor.execute(
-                        "SELECT nombre FROM Pais WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
-                            nombre
-                        )
+                        "SELECT nombre FROM Pais WHERE nombre = %s AND estado_id IN (1, 2)", [nombre]
                     )
+
 
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(

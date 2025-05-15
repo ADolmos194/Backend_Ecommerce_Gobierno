@@ -1,6 +1,6 @@
 from django.apps import AppConfig
 
 
-class AppNoticiasConfig(AppConfig):
+class AppMaquinariasConfig(AppConfig):
     default_auto_field = 'django.db.models.BigAutoField'
-    name = 'app_noticias'
+    name = 'app_maquinarias'
