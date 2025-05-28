@@ -1151,9 +1151,7 @@ def actualizar_pais(request, id):
                     estado = data["estado"]
 
                     cursor.execute(
-                        "SELECT nombre FROM Pais WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
-                            nombre, estado, id
-                        )
+                        "SELECT nombre FROM Pais WHERE nombre=%s and estado_id =%s and id <> %s", [nombre, estado, id]
                     )
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
@@ -1389,9 +1387,7 @@ def crear_departamento(request):
                     nombre = data["nombre"]
 
                     cursor.execute(
-                        "SELECT nombre FROM Departamento WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
-                            nombre
-                        )
+                        "SELECT nombre FROM Departamento WHERE nombre=%s and estado_id IN (1, 2)",[nombre] 
                     )
 
                     if len(cursor.fetchall()) > 0:
@@ -1472,9 +1468,7 @@ def actualizar_departamento(request, id):
                     estado = data["estado"]
 
                     cursor.execute(
-                        "SELECT nombre FROM Departamento WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
-                            nombre, estado, id
-                        )
+                        "SELECT nombre FROM Departamento WHERE nombre=%s and estado_id =%s and id <> %s", [nombre, estado, id]
                     )
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
@@ -1710,9 +1704,7 @@ def crear_provincia(request):
                     nombre = data["nombre"]
 
                     cursor.execute(
-                        "SELECT nombre FROM Provincia WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
-                            nombre
-                        )
+                        "SELECT nombre FROM Provincia WHERE nombre=%s and estado_id IN (1, 2)", [nombre]
                     )
 
                     if len(cursor.fetchall()) > 0:
@@ -1794,9 +1786,7 @@ def actualizar_provincia(request, id):
                     estado = data["estado"]
 
                     cursor.execute(
-                        "SELECT nombre FROM Provincia WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
-                            nombre, estado, id
-                        )
+                        "SELECT nombre FROM Provincia WHERE nombre=%s and estado_id =%s and id <> %S", [nombre, estado, id]
                     )
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
@@ -2031,9 +2021,7 @@ def crear_distrito(request):
                     nombre = data["nombre"]
 
                     cursor.execute(
-                        "SELECT nombre FROM Distrito WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
-                            nombre
-                        )
+                        "SELECT nombre FROM Distrito WHERE nombre=%s and estado_id IN (1, 2)", [nombre]
                     )
 
                     if len(cursor.fetchall()) > 0:
@@ -2115,9 +2103,7 @@ def actualizar_distrito(request, id):
                     estado = data["estado"]
 
                     cursor.execute(
-                        "SELECT nombre FROM Distrito WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
-                            nombre, estado, id
-                        )
+                        "SELECT nombre FROM Distrito WHERE nombre=%s and estado_id = %s and id <> %s", [nombre, estado, id]
                     )
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
@@ -2297,9 +2283,7 @@ def crear_localidadcaserio(request):
                     nombre = data["nombre"]
 
                     cursor.execute(
-                        "SELECT nombre FROM LocalidadCaserio WHERE (nombre='{0}') and estado_id IN (1, 2)".format(
-                            nombre
-                        )
+                        "SELECT nombre FROM LocalidadCaserio WHERE nombre=%s and estado_id IN (1, 2)",[nombre]
                     )
 
                     if len(cursor.fetchall()) > 0:
@@ -2373,9 +2357,7 @@ def actualizar_localidadcaserio(request, id):
                     estado = data["estado"]
 
                     cursor.execute(
-                        "SELECT nombre FROM LocalidadCaserio WHERE (nombre='{0}') and estado_id = {1} and id <> {2}".format(
-                            nombre, estado, id
-                        )
+                        "SELECT nombre FROM LocalidadCaserio WHERE nombre=%s and estado_id = %s and id <> %s", [nombre, estado, id]
                     )
                     if len(cursor.fetchall()) > 0:
                         dic_response.update(
