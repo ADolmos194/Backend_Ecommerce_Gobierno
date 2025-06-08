@@ -30,12 +30,12 @@ def ConvertirQueryADiccionarioDato(cursor):
 
 @api_view(["GET"])
 @transaction.atomic
-def listar_demandaproductosagropecuarios(request, id):
+def listar_demandas(request, id):
     dic_response = {
         "code": 400,
         "status": "error",
-        "message": "Demanda de productos agropecuarios no encontradas",
-        "message_user": "Demanda de productos agropecuarios no encontradas",
+        "message": "Demandas no encontradas",
+        "message_user": "Demandas no encontradas",
         "data": [],
     }
 
@@ -46,31 +46,33 @@ def listar_demandaproductosagropecuarios(request, id):
                     """
                     SELECT
                         d.id,
-                        d.provincia_id,
-                        pr.nombre as nombre_provincia,
-                        d.distrito_id,
-                        di.nombre as nombre_distrito,
-                        pr.nombre || '-' || di.nombre AS nombre_provincia_distrito,
+                        d.tiposdemandas_id,
+                        td.nombre AS nombre_tipodemanda,
+                        d.url_imagen,
                         d.fecha_publicacion,
                         d.tipoproducto_id,
-                        tipro.nombre as nombre_tipoproducto,
+                        tipro.nombre AS nombre_tipoproducto,
                         d.producto_id,
-                        pro.nombre as nombre_producto,
-                        d.url_imagen,
+                        pro.nombre AS nombre_producto,
                         d.descripcion,
                         d.nota,
+                        d.localidadcaserio_id,
+                        lc.nombre AS nombre_localidadcaserio,
+                        d.referencia_ubicacion,
                         d.direccion,
                         d.contacto,
                         d.telefono,
                         d.email,
                         d.usuariosistema_id,
-                        us.usuario as nombre,
+                        us.usuario AS nombre_usuario,
                         d.estado_id,
-                        TO_CHAR(d.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(d.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
-                    FROM DemandaProductosAgropecuarios d
-                    LEFT JOIN Provincia pr ON d.provincia_id = pr.id
-                    LEFT JOIN Distrito di ON d.distrito_id = di.id
+                        TO_CHAR(d.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') AS fecha_creacion,
+                        TO_CHAR(d.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') AS fecha_modificacion
+                    FROM Demandas d
+                    LEFT JOIN LocalidadCaserio lc ON d.localidadcaserio_id = lc.id
+                    LEFT JOIN Distrito di ON lc.distrito_id = di.id
+                    LEFT JOIN Provincia pr ON di.provincia_id = pr.id
+                    LEFT JOIN Tiposdemandas td ON d.tiposdemandas_id = td.id
                     LEFT JOIN Producto pro ON d.producto_id = pro.id
                     LEFT JOIN TipoProducto tipro ON d.tipoproducto_id = tipro.id
                     LEFT JOIN UsuarioSistema us ON d.usuariosistema_id = us.id
@@ -80,24 +82,24 @@ def listar_demandaproductosagropecuarios(request, id):
                     """,
                     [id]
                 )
-                dic_demandaproductosagropecuarios = ConvertirQueryADiccionarioDato(cursor)
+                dic_demandas = ConvertirQueryADiccionarioDato(cursor)
 
             dic_response.update(
                 {
                     "code": 200,
                     "status": "success",
-                    "message_user": "Demanda de productos agropecuarios obtenidas correctamente",
-                    "message": "Demanda de productos agropecuarios obtenidas correctamente",
-                    "data": dic_demandaproductosagropecuarios,
+                    "message_user": "Demandas obtenidas correctamente",
+                    "message": "Demandas obtenidas correctamente",
+                    "data": dic_demandas,
                 }
             )
             return JsonResponse(dic_response, status=200)
 
         except DatabaseError as e:
-            logger.error(f"Error al listar la demanda de productos agropecuarios: {str(e)}")
+            logger.error(f"Error al listar la demandas: {str(e)}")
             dic_response.update(
                 {
-                    "message": "Error al listar la demanda de productos agropecuarios",
+                    "message": "Error al listar la demandas",
                     "data": str(e),
                 }
             )
@@ -108,7 +110,7 @@ def listar_demandaproductosagropecuarios(request, id):
 
 @api_view(["POST"])
 @transaction.atomic
-def crear_demandaproductosagropecuarios(request):
+def crear_demandas(request):
 
     dic_response = {
         "code": 400,
@@ -126,7 +128,7 @@ def crear_demandaproductosagropecuarios(request):
             data["fecha_creacion"] = datetime.now(ZoneInfo("America/Lima"))
             data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
-            serializer = DemandaProductosAgropecuariosSerializer(data=data)
+            serializer = DemandasSerializer(data=data)
 
             if serializer.is_valid():
 
@@ -166,7 +168,7 @@ def crear_demandaproductosagropecuarios(request):
 
 @api_view(["PUT"])
 @transaction.atomic
-def actualizar_demandaproductosagropecuarios(request, id):
+def actualizar_demandas(request, id):
 
     dic_response = {
         "code": 400,
@@ -184,16 +186,16 @@ def actualizar_demandaproductosagropecuarios(request, id):
             data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
 
             try:
-                queryset = DemandaProductosAgropecuarios.objects.using("default").get(
+                queryset = Demandas.objects.using("default").get(
                     id=id
                 )
-            except DemandaProductosAgropecuarios.DoesNotExist:
+            except Demandas.DoesNotExist:
 
                 return JsonResponse(
                     dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
                 )
 
-            serializer = DemandaProductosAgropecuariosSerializer(queryset, data=data)
+            serializer = DemandasSerializer(queryset, data=data)
 
             if serializer.is_valid():
 
@@ -234,7 +236,7 @@ def actualizar_demandaproductosagropecuarios(request, id):
 
 @api_view(["DELETE"])
 @transaction.atomic
-def eliminar_demandaproductosagropecuarios(request, id):
+def eliminar_demandas(request, id):
 
     dic_response = {
         "code": 400,
@@ -250,7 +252,7 @@ def eliminar_demandaproductosagropecuarios(request, id):
             data = {"estado": 3}
 
             try:
-                queryset = DemandaProductosAgropecuarios.objects.using("default").get(
+                queryset = Demandas.objects.using("default").get(
                     id=id
                 )
 
@@ -261,7 +263,7 @@ def eliminar_demandaproductosagropecuarios(request, id):
 
                 queryset.save()
 
-                serializer = DemandaProductosAgropecuariosSerializer(queryset)
+                serializer = DemandasSerializer(queryset)
 
                 dic_response.update(
                     {
@@ -275,7 +277,7 @@ def eliminar_demandaproductosagropecuarios(request, id):
 
                 return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
-            except DemandaProductosAgropecuarios.DoesNotExist:
+            except Demandas.DoesNotExist:
                 return JsonResponse(
                     dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
                 )

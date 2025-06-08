@@ -10,9 +10,9 @@ from .views import *
 urlpatterns = [
 
     # Rutas para la API de DEMANDA PRODUCTOS AGROPECUARIOS
-    path("demandaproductosagropecuarios/<int:id>/", listar_demandaproductosagropecuarios, name="listar_demandaproductosagropecuarios"),
-    path("demandaproductosagropecuarios/crear/", crear_demandaproductosagropecuarios, name="crear_demandaproductosagropecuarios"),
-    path("demandaproductosagropecuarios/actualizar/<int:id>/", actualizar_demandaproductosagropecuarios, name="actualizar_demandaproductosagropecuarios"),
-    path("demandaproductosagropecuarios/eliminar/<int:id>/", eliminar_demandaproductosagropecuarios, name="eliminar_demandaproductosagropecuarios"),
+    path("demandas/<int:id>/", listar_demandas, name="listar_demandas"),
+    path("demandas/crear/", crear_demandas, name="crear_demandas"),
+    path("demandas/actualizar/<int:id>/", actualizar_demandas, name="actualizar_demandas"),
+    path("demandas/eliminar/<int:id>/", eliminar_demandas, name="eliminar_demandas"),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)

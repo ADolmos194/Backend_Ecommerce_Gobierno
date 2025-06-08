@@ -6,7 +6,7 @@ from app.models import Estado
 class TipoMaquinaria (models.Model):
 
     nombre = models.CharField(max_length=50, null=True, blank=True)
-    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
+    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
     
@@ -19,7 +19,7 @@ class TipoMaquinaria (models.Model):
 class Maquinaria (models.Model):
 
     nombre = models.CharField(max_length=50, null=True, blank=True)
-    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
+    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
     
@@ -32,7 +32,7 @@ class Maquinaria (models.Model):
 class SubMaquinaria (models.Model):
 
     nombre = models.CharField(max_length=50, null=True, blank=True)
-    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
+    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
     

@@ -7,7 +7,7 @@ from app_categorias.models import TipoProducto, Producto, SubProducto
 class TipoAnuncio (models.Model):
 
     nombre = models.CharField(max_length=50, null=True, blank=True)
-    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
+    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
     
@@ -20,19 +20,19 @@ class TipoAnuncio (models.Model):
 
 class AnuncioCompraVenta(models.Model):
     
-    tipoanuncio = models.ForeignKey(TipoAnuncio, on_delete=models.CASCADE)
+    tipoanuncio = models.ForeignKey(TipoAnuncio, on_delete=models.RESTRICT)
     titulo = models.CharField(max_length=50, null=True, blank= True)
     asunto = models.CharField(max_length=100, null=True, blank= True)
     descripcion = models.TextField(null=True, blank=True)
-    unidadmedida = models.ForeignKey(UnidadMedida, on_delete=models.CASCADE)
-    tipoproducto = models.ForeignKey(TipoProducto, on_delete=models.CASCADE)
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    subproducto = models.ForeignKey(SubProducto, on_delete=models.CASCADE)
+    unidadmedida = models.ForeignKey(UnidadMedida, on_delete=models.RESTRICT)
+    tipoproducto = models.ForeignKey(TipoProducto, on_delete=models.RESTRICT)
+    producto = models.ForeignKey(Producto, on_delete=models.RESTRICT)
+    subproducto = models.ForeignKey(SubProducto, on_delete=models.RESTRICT)
     precio = models.FloatField(null=True, blank=True)
     costo = models.FloatField(null=True, blank=True)
     termino =  models.TextField(null=True, blank=True)
     contacto = models.CharField(max_length=100, null=True, blank= True)
-    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
+    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
     
@@ -49,7 +49,7 @@ class AnuncioTrabajo(models.Model):
     salario = models.FloatField(null=True, blank=True)
     periodoingreso = fecha_creacion = models.DateTimeField(null=True, blank=True)
     periodofinal = fecha_creacion = models.DateTimeField(null=True, blank=True)
-    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
+    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
     
@@ -65,13 +65,13 @@ class AnuncioMaquinaria(models.Model):
     titulo = models.CharField(max_length=50, null=True, blank= True)
     asunto = models.CharField(max_length=100, null=True, blank= True)
     descripcion = models.TextField(null=True, blank=True)
-    tipomaquinaria = models.ForeignKey(TipoProducto, on_delete=models.CASCADE)
-    maquinaria = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    submaquinaria = models.ForeignKey(SubProducto, on_delete=models.CASCADE)
+    tipomaquinaria = models.ForeignKey(TipoProducto, on_delete=models.RESTRICT)
+    maquinaria = models.ForeignKey(Producto, on_delete=models.RESTRICT)
+    submaquinaria = models.ForeignKey(SubProducto, on_delete=models.RESTRICT)
     precioalquiler = models.FloatField(null=True, blank=True)
     termino =  models.TextField(null=True, blank=True)
     contacto = models.CharField(max_length=100, null=True, blank= True)
-    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
+    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
     

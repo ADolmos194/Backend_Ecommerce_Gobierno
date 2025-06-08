@@ -1,13 +1,13 @@
 from rest_framework import serializers
 from .models import (
-    DemandaProductosAgropecuarios
+    Demandas
 )
 
-class DemandaProductosAgropecuariosSerializer(serializers.ModelSerializer):
+class DemandasSerializer(serializers.ModelSerializer):
 
     class Meta:
 
-        model = DemandaProductosAgropecuarios
+        model = Demandas
         fields = "__all__"
         
         

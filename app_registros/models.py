@@ -5,13 +5,13 @@ from app.models import Estado, UnidadMedida, ConversionUnidadMedida, Mercado, De
 
 class PreciosMercadoMayoristaMinorista(models.Model):
 
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    unidadmedida = models.ForeignKey(UnidadMedida, on_delete=models.CASCADE)
+    producto = models.ForeignKey(Producto, on_delete=models.RESTRICT)
+    unidadmedida = models.ForeignKey(UnidadMedida, on_delete=models.RESTRICT)
     valor_equivalente_kilogramo_litro = models.FloatField(null=True, blank=True)
     precio_minimo = models.FloatField(null=True, blank=True)
     precio_promedio = models.FloatField(null=True, blank=True)
     precio_maximo = models.FloatField(null=True, blank=True)
-    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
+    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
     
@@ -24,8 +24,8 @@ class PreciosMercadoMayoristaMinorista(models.Model):
 class PrecioCiudades(models.Model):
     codigo = models.CharField(max_length=50, null=True, blank=True)
     serie = models.CharField(max_length=100, null=True, blank=True)
-    producto = models.ForeignKey(Producto, on_delete=models.CASCADE)
-    conversionunidadmedida = models.ForeignKey(ConversionUnidadMedida, on_delete=models.CASCADE)
+    producto = models.ForeignKey(Producto, on_delete=models.RESTRICT)
+    conversionunidadmedida = models.ForeignKey(ConversionUnidadMedida, on_delete=models.RESTRICT)
     valor_anual = models.FloatField(null=True, blank=True)
     valor_enero = models.FloatField(null=True, blank=True)
     valor_febrero = models.FloatField(null=True, blank=True)
@@ -39,7 +39,7 @@ class PrecioCiudades(models.Model):
     valor_octubre = models.FloatField(null=True, blank=True)
     valor_noviembre = models.FloatField(null=True, blank=True)
     valor_diciembre = models.FloatField(null=True, blank=True)
-    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
+    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
     
