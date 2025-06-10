@@ -48,7 +48,6 @@ INSTALLED_APPS = [
     'corsheaders',
     'app',
     'app_autenticacion',
-    'app_registros',
     'app_categorias',
     'app_ofertas',
     'app_demandas',
