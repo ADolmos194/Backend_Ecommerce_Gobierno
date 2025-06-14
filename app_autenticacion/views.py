@@ -6,14 +6,20 @@ from rest_framework import status
 from datetime import datetime
 from zoneinfo import ZoneInfo
 
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
 from django.db import connection, transaction, DatabaseError
 
 from .serializer import *
 from .models import *
 from django.contrib.auth.hashers import check_password
+
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
+
+
 logger = logging.getLogger(__name__)
+
 
 def ConvertirQueryADiccionarioDato(cursor):
     columna = [desc[0] for desc in cursor.description]
@@ -32,60 +38,105 @@ def verificacion_usuariosistema(request):
     }
 
     if request.method == "POST":
+        usuario = request.data.get("usuario")
+        password = request.data.get("password")
         try:
-            data = json.loads(request.body)
+            usuario_obj = UsuarioSistema.objects.get(usuario=usuario, estado_id=1)
 
-            usuario = data.get('usuario', '')
-            password = data.get('password', '')
+            if check_password(password, usuario_obj.password):
+                refresh = RefreshToken.for_user(usuario_obj)
 
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    """
-                    SELECT id, usuario, password 
-                    FROM usuariosistema 
-                    WHERE usuario = %s AND estado_id IN (1)
-                    """,
-                    [usuario]
+                return Response(
+                    {
+                        "code": 200,
+                        "status": "success",
+                        "message": "Inicio de sesión exitoso",
+                        "message_user": "Bienvenido al sistema",
+                        "data": {
+                            "id": usuario_obj.id,
+                            "usuario": usuario_obj.usuario,
+                            "access": str(refresh.access_token),
+                            "refresh": str(refresh),
+                        },
+                    },
+                    status=200,
                 )
-                dic_credenciales = ConvertirQueryADiccionarioDato(cursor)
 
-                if dic_credenciales:
-                    usuario_db = dic_credenciales[0]
-                    if check_password(password, usuario_db["password"]):
-                        dic_response.update({
-                            "code": 200,
-                            "status": "success",
-                            "message": "Autenticación exitosa",
-                            "message_user": "Bienvenido al sistema",
-                            "data": {
-                                "id": usuario_db["id"],
-                                "usuario": usuario_db["usuario"],
-                            },
-                        })
-                        return JsonResponse(dic_response, status=200)
-                    else:
-                        dic_response.update({
-                            "message": "Contraseña incorrecta",
-                            "message_user": "Usuario o contraseña incorrectos"
-                        })
-                        return JsonResponse(dic_response, status=401)
+            return Response(
+                {
+                    "code": 401,
+                    "status": "error",
+                    "message": "Contraseña incorrecta",
+                    "message_user": "Usuario o contraseña incorrectos",
+                },
+                status=401,
+            )
 
-                dic_response.update({
+        except UsuarioSistema.DoesNotExist:
+            return Response(
+                {
+                    "code": 404,
+                    "status": "error",
                     "message": "Usuario no encontrado o inactivo",
                     "message_user": "Usuario no encontrado o inactivo",
-                    "data": []
-                })
-                return JsonResponse(dic_response, status=404)
-
-        except Exception as e:
-            logger.error(f"Error al verificar usuario: {str(e)}")
-            return JsonResponse(dic_response, status=500)
+                },
+                status=404,
+            )
 
     return JsonResponse(dic_response, status=200)
-        
 
-@api_view(["GET"])
-@transaction.atomic
+
+@api_view(["POST"])
+def login_usuario_sistema(request):
+    usuario = request.data.get("usuario")
+    password = request.data.get("password")
+
+    try:
+        usuario_obj = UsuarioSistema.objects.get(usuario=usuario, estado_id=1)
+
+        if check_password(password, usuario_obj.password):
+            refresh = RefreshToken.for_user(usuario_obj)
+
+            return Response(
+                {
+                    "code": 200,
+                    "status": "success",
+                    "message": "Inicio de sesión exitoso",
+                    "message_user": "Bienvenido al sistema",
+                    "data": {
+                        "id": usuario_obj.id,
+                        "usuario": usuario_obj.usuario,
+                        "access": str(refresh.access_token),
+                        "refresh": str(refresh),
+                    },
+                },
+                status=200,
+            )
+
+        return Response(
+            {
+                "code": 401,
+                "status": "error",
+                "message": "Contraseña incorrecta",
+                "message_user": "Usuario o contraseña incorrectos",
+            },
+            status=401,
+        )
+
+    except UsuarioSistema.DoesNotExist:
+        return Response(
+            {
+                "code": 404,
+                "status": "error",
+                "message": "Usuario no encontrado o inactivo",
+                "message_user": "Usuario no encontrado o inactivo",
+            },
+            status=404,
+        )
+
+
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def listar_usuariosistema(request):
     dic_response = {
         "code": 400,
@@ -124,9 +175,7 @@ def listar_usuariosistema(request):
             return JsonResponse(dic_response, status=200)
 
         except DatabaseError as e:
-            logger.error(
-                f"Error al listar a los Usuarios Activos: {str(e)}"
-            )
+            logger.error(f"Error al listar a los Usuarios Activos: {str(e)}")
             dic_response.update(
                 {
                     "message": "Error al listar a los Usuarios Activos",
@@ -138,11 +187,10 @@ def listar_usuariosistema(request):
     return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
 
-
 @api_view(["POST"])
 @transaction.atomic
 def crear_usuariosistema(request):
-    
+
     dic_response = {
         "code": 400,
         "status": "error",
@@ -152,11 +200,11 @@ def crear_usuariosistema(request):
     }
 
     if request.method == "POST":
-        
+
         try:
 
             data = json.loads(request.body)
-            data['password'] = make_password(data['password'])
+            data["password"] = make_password(data["password"])
             data["estado"] = 1
             data["fecha_creacion"] = datetime.now(ZoneInfo("America/Lima"))
             data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
@@ -171,7 +219,7 @@ def crear_usuariosistema(request):
 
                     cursor.execute(
                         "SELECT usuario, email FROM UsuarioSistema WHERE nombre=%s AND email=%s AND estado_id IN (1, 2)",
-                        [nombre, email]
+                        [nombre, email],
                     )
 
                     if len(cursor.fetchall()) > 0:
@@ -182,7 +230,6 @@ def crear_usuariosistema(request):
                             }
                         )
                         return JsonResponse(dic_response, status=400)
-
 
                     cursor.close()
 
@@ -216,4 +263,3 @@ def crear_usuariosistema(request):
             return JsonResponse(dic_response, status=500)
 
     return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
-    
