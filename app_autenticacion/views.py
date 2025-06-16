@@ -53,10 +53,14 @@ def verificacion_usuariosistema(request):
                         "message": "Inicio de sesión exitoso",
                         "message_user": "Bienvenido al sistema",
                         "data": {
-                            "id": usuario_obj.id,
-                            "usuario": usuario_obj.usuario,
                             "access": str(refresh.access_token),
                             "refresh": str(refresh),
+                            "userData": {
+                                "id": str(usuario_obj.id),
+                                "usuario": usuario_obj.usuario,
+                                "nombre": f"{usuario_obj.nombre} {usuario_obj.apellido}",
+                                "email": usuario_obj.email,
+                            },
                         },
                     },
                     status=200,
@@ -84,107 +88,6 @@ def verificacion_usuariosistema(request):
             )
 
     return JsonResponse(dic_response, status=200)
-
-
-@api_view(["POST"])
-def login_usuario_sistema(request):
-    usuario = request.data.get("usuario")
-    password = request.data.get("password")
-
-    try:
-        usuario_obj = UsuarioSistema.objects.get(usuario=usuario, estado_id=1)
-
-        if check_password(password, usuario_obj.password):
-            refresh = RefreshToken.for_user(usuario_obj)
-
-            return Response(
-                {
-                    "code": 200,
-                    "status": "success",
-                    "message": "Inicio de sesión exitoso",
-                    "message_user": "Bienvenido al sistema",
-                    "data": {
-                        "id": usuario_obj.id,
-                        "usuario": usuario_obj.usuario,
-                        "access": str(refresh.access_token),
-                        "refresh": str(refresh),
-                    },
-                },
-                status=200,
-            )
-
-        return Response(
-            {
-                "code": 401,
-                "status": "error",
-                "message": "Contraseña incorrecta",
-                "message_user": "Usuario o contraseña incorrectos",
-            },
-            status=401,
-        )
-
-    except UsuarioSistema.DoesNotExist:
-        return Response(
-            {
-                "code": 404,
-                "status": "error",
-                "message": "Usuario no encontrado o inactivo",
-                "message_user": "Usuario no encontrado o inactivo",
-            },
-            status=404,
-        )
-
-
-@api_view(['GET'])
-@permission_classes([IsAuthenticated])
-def listar_usuariosistema(request):
-    dic_response = {
-        "code": 400,
-        "status": "error",
-        "message": "Usuarios Activos no encontradas",
-        "message_user": "Usuarios Activos no encontradas",
-        "data": [],
-    }
-
-    if request.method == "GET":
-        try:
-
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    """
-                    SELECT
-                        us.id,
-                        us.usuario as nombre
-                    FROM UsuarioSistema us
-                    WHERE us.estado_id IN (1)
-                    ORDER BY us.id DESC
-                    """
-                )
-                dic_usuariosactivos = ConvertirQueryADiccionarioDato(cursor)
-                cursor.close()
-
-            dic_response.update(
-                {
-                    "code": 200,
-                    "status": "success",
-                    "message_user": "Usuarios Activos obtenidas correctamente",
-                    "message": "Usuarios Activos obtenidas correctamente",
-                    "data": dic_usuariosactivos,
-                }
-            )
-            return JsonResponse(dic_response, status=200)
-
-        except DatabaseError as e:
-            logger.error(f"Error al listar a los Usuarios Activos: {str(e)}")
-            dic_response.update(
-                {
-                    "message": "Error al listar a los Usuarios Activos",
-                    "data": str(e),
-                }
-            )
-            return JsonResponse(dic_response, status=500)
-
-    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
 
 @api_view(["POST"])
