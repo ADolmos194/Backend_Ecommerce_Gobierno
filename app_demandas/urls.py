@@ -8,7 +8,8 @@ from .views import *
 
 # Definición de las rutas URL para la API de clientes
 urlpatterns = [
-
+    # Rutas para la API de TIPOS DEMANDAS
+    path("tiposdemandas/", listar_tiposdemandas, name="listar_tiposdemandas"),
     # Rutas para la API de DEMANDA PRODUCTOS AGROPECUARIOS
     path("demandas/<int:id>/", listar_demandas, name="listar_demandas"),
     path("demandas/crear/", crear_demandas, name="crear_demandas"),

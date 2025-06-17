@@ -61,6 +61,8 @@ urlpatterns = [
     path('distrito/eliminar/<int:id>/', eliminar_distrito, name='eliminar_distrito'),
     
     #---> URL LocalidadCaserio
+    
+    path('localidadcaserioactivos/', listar_localidadcaserioactivos, name='listar_localidadcaserioactivos'),
     path('localidadcaserio/', listar_localidadcaserio, name='listar_localidadcaserio'),
     path('localidadcaserio/crear/', crear_localidadcaserio, name='crear_localidadcaserio'),
     path('localidadcaserio/actualizar/<int:id>/', actualizar_localidadcaserio, name='actualizar_localidadcaserio'),

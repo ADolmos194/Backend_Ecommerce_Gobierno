@@ -2200,14 +2200,65 @@ def eliminar_distrito(request, id):
 
 
 # -> CRUD de Localidad - Caserio
+
+api_view(["GET"])
+@transaction.atomic
+def listar_localidadcaserioactivos(request):
+    dic_response = {
+        "code": 400,
+        "status": "error",
+        "message": "Localidades - Caserio activos no encontradas",
+        "message_user": "Localidades - Caserio activos no encontradas",
+        "data": [],
+    }
+
+    if request.method == "GET":
+        try:
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT
+                        l.id,
+                        l.nombre
+                    FROM LocalidadCaserio l
+                    WHERE l.estado_id IN (1)
+                    ORDER BY l.id DESC
+                    """
+                )
+                dic_localidadcaserioactivos = ConvertirQueryADiccionarioDato(cursor)
+                cursor.close()
+
+            dic_response.update(
+                {
+                    "code": 200,
+                    "status": "success",
+                    "message_user": "Localidades - Caserio activos obtenidos correctamente",
+                    "message": "Localidades - Caserio activos obtenidos correctamente",
+                    "data": dic_localidadcaserioactivos,
+                }
+            )
+            return JsonResponse(dic_response, status=200)
+
+        except DatabaseError as e:
+            logger.error(f"Error al listar las Localidades - Caserios activos: {str(e)}")
+            dic_response.update(
+                {"message": "Error al listar las Localidades - Caserios activos", "data": str(e)}
+            )
+            return JsonResponse(dic_response, status=500)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
+
+
 api_view(["GET"])
 @transaction.atomic
 def listar_localidadcaserio(request):
     dic_response = {
         "code": 400,
         "status": "error",
-        "message": "Localidad - Caserio no encontradas",
-        "message_user": "Localidad - Caserio no encontradas",
+        "message": "Localidades - Caserios no encontradas",
+        "message_user": "Localidades - Caserios no encontradas",
         "data": [],
     }
 
@@ -2238,17 +2289,17 @@ def listar_localidadcaserio(request):
                 {
                     "code": 200,
                     "status": "success",
-                    "message_user": "Localidad - Caserio obtenidos correctamente",
-                    "message": "Localidad - Caserio obtenidos correctamente",
+                    "message_user": "Localidades - Caserios obtenidos correctamente",
+                    "message": "Localidades - Caserios obtenidos correctamente",
                     "data": dic_localidadcaserio,
                 }
             )
             return JsonResponse(dic_response, status=200)
 
         except DatabaseError as e:
-            logger.error(f"Error al listar los LocalidadCaserio: {str(e)}")
+            logger.error(f"Error al listar las Localidades - Caserios: {str(e)}")
             dic_response.update(
-                {"message": "Error al listar los LocalidadCaserio", "data": str(e)}
+                {"message": "Error al listar las Localidades - Caserios", "data": str(e)}
             )
             return JsonResponse(dic_response, status=500)
 

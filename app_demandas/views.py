@@ -27,6 +27,54 @@ def ConvertirQueryADiccionarioDato(cursor):
     columna = [desc[0] for desc in cursor.description]
     return [dict(zip(columna, fila)) for fila in cursor.fetchall()]
 
+@api_view(["GET"])
+@transaction.atomic
+def listar_tiposdemandas(request):
+    dic_response = {
+        "code": 400,
+        "status": "error",
+        "message": "Tipos de demandas no encontradas",
+        "message_user": "Tipos de demandas no encontradas",
+        "data": [],
+    }
+
+    if request.method == "GET":
+        try:
+
+            with connection.cursor() as cursor:
+                cursor.execute(
+                    """
+                    SELECT
+                        tp.id,
+                        tp.nombre
+                    FROM TiposDemandas tp
+                    WHERE tp.estado_id IN (1)
+                    ORDER BY tp.id DESC 
+                    """
+                )
+                dic_tiposdemandas = ConvertirQueryADiccionarioDato(cursor)
+                cursor.close()
+
+            dic_response.update(
+                {
+                    "code": 200,
+                    "status": "success",
+                    "message_user": "Tipos de demandas obtenidas correctamente",
+                    "message": "Tipos de demandas obtenidas correctamente",
+                    "data": dic_tiposdemandas,
+                }
+            )
+            return JsonResponse(dic_response, status=200)
+
+        except DatabaseError as e:
+            logger.error(f"Error al listar los tipos de demandas: {str(e)}")
+            dic_response.update(
+                {"message": "Error al listar los tipos de demandas", "data": str(e)}
+            )
+            return JsonResponse(dic_response, status=500)
+
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
 
 @api_view(["GET"])
 @transaction.atomic
