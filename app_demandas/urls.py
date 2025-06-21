@@ -15,5 +15,6 @@ urlpatterns = [
     path("demandas/crear/", crear_demandas, name="crear_demandas"),
     path("demandas/actualizar/<int:id>/", actualizar_demandas, name="actualizar_demandas"),
     path("demandas/eliminar/<int:id>/", eliminar_demandas, name="eliminar_demandas"),
+    path("demandas/eliminacion-masiva/", eliminar_demandas_masivas, name="eliminar_demandas_masivas"),
     
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
