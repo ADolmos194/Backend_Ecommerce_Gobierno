@@ -35,6 +35,7 @@ class Ofertas(models.Model): #OFERTA SERVCIO AGRARIO , PRODUCTOS LACTEOS, FRUTAS
     contacto = models.TextField(null=True, blank=True)
     telefono = models.CharField(max_length=25, null=True, blank=True)
     email = models.EmailField(null=True, blank=True)
+    web = models.TextField(null=True, blank=True)
     usuariosistema = models.ForeignKey(UsuarioSistema, on_delete=models.RESTRICT)
     estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
     fecha_creacion = models.DateTimeField(auto_now_add=True)

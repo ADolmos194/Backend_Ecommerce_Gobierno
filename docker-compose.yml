@@ -1,7 +1,10 @@
 services:
-  web:
+  backend:
     build: .
     command: gunicorn --config gunicorn.conf.py backend.wsgi:application
+    environment:
+    - DJANGO_SETTINGS_MODULE=backend.settings
+    - DEBUG=True
     ports:
       - "8000:8000"
     volumes:

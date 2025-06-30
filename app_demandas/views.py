@@ -339,3 +339,49 @@ def eliminar_demandas(request, id):
 
     return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
 
+
+
+@api_view(["POST"]) 
+@transaction.atomic
+def eliminar_demandas_masivas(request):
+    dic_response = {
+        "code": 400,
+        "status": "error",
+        "message": "Error al eliminar las demandas seleccionadas",
+        "message_user": "No se pudieron eliminar las demandas seleccionadas",
+        "data": [],
+    }
+    if request.method == "POST":
+        try:
+            ids = request.data.get("ids", [])
+            if not ids:
+                dic_response["message_user"] = "No se recibieron IDs para eliminar"
+                return JsonResponse(dic_response, status=400)
+
+            demandas_actualizadas = []
+
+            for demanda_id in ids:
+                try:
+                    demanda = Demandas.objects.using("default").get(id=demanda_id)
+                    demanda.estado = Estado.objects.using("default").get(id=3)
+                    demanda.fecha_modificacion = datetime.now(ZoneInfo("America/Lima"))
+                    demanda.save()
+                    demandas_actualizadas.append(DemandasSerializer(demanda).data)
+                except Demandas.DoesNotExist:
+                    continue  # O registrar en log
+
+            dic_response.update({
+                "code": 200,
+                "status": "success",
+                "message": "Demandas eliminadas correctamente",
+                "message_user": "Las demandas seleccionadas fueron eliminadas lógicamente",
+                "data": demandas_actualizadas,
+            })
+            return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
+
+        except Exception as e:
+            logger.error(f"Error al eliminar demandas masivamente: {str(e)}")
+            dic_response["message"] = "Error inesperado en el servidor"
+            return JsonResponse(dic_response, safe=False, status=500)
+        
+    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
