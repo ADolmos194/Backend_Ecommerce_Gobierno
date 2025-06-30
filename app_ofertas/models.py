@@ -41,7 +41,7 @@ class Ofertas(models.Model): #OFERTA SERVCIO AGRARIO , PRODUCTOS LACTEOS, FRUTAS
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
     class Meta:
-        db_table = "demandas"
+        db_table = "ofertas"
         
     def __str__(self):
         return '%s' % (self.descripcion)
