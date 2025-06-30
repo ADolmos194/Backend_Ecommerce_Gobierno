@@ -65,6 +65,7 @@ def listar_ofertas(request, id):
                         d.contacto,
                         d.telefono,
                         d.email,
+                        d.web,
                         d.usuariosistema_id,
                         us.usuario AS nombre_usuario,
                         d.estado_id,
