@@ -35,7 +35,7 @@ class Estado(models.Model):
 class UnidadMedida(models.Model):
 
     nombre = models.CharField(max_length=50, null=True, blank=True)
-    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
@@ -48,7 +48,7 @@ class UnidadMedida(models.Model):
 class ConversionUnidadMedida(models.Model):
 
     nombre = models.CharField(max_length=50, null=True, blank=True)
-    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
@@ -61,7 +61,7 @@ class ConversionUnidadMedida(models.Model):
 class Mercado(models.Model):
 
     nombre = models.CharField(max_length=100, null=True, blank=True)
-    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
@@ -75,7 +75,7 @@ class Mercado(models.Model):
 class Pais(models.Model):
 
     nombre = models.CharField(max_length=100, null=True, blank=True)
-    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
@@ -88,8 +88,8 @@ class Pais(models.Model):
 class Departamento(models.Model):
 
     nombre = models.CharField(max_length=100, null=True, blank=True)
-    pais = models.ForeignKey(Pais, on_delete=models.RESTRICT)
-    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
+    pais = models.ForeignKey(Pais, on_delete=models.CASCADE)
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
@@ -102,8 +102,8 @@ class Departamento(models.Model):
 class Provincia(models.Model):
 
     nombre = models.CharField(max_length=100, null=True, blank=True)
-    departamento = models.ForeignKey(Departamento, on_delete=models.RESTRICT)
-    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
+    departamento = models.ForeignKey(Departamento, on_delete=models.CASCADE)
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
@@ -116,8 +116,8 @@ class Provincia(models.Model):
 class Distrito(models.Model):
 
     nombre = models.CharField(max_length=100, null=True, blank=True)
-    provincia = models.ForeignKey(Provincia, on_delete=models.RESTRICT)  
-    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
+    provincia = models.ForeignKey(Provincia, on_delete=models.CASCADE)  
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
 
@@ -130,8 +130,8 @@ class Distrito(models.Model):
 class LocalidadCaserio(models.Model):
 
     nombre = models.CharField(max_length=100, null=True, blank=True)
-    distrito = models.ForeignKey(Distrito, on_delete=models.RESTRICT)  
-    estado = models.ForeignKey(Estado, on_delete=models.RESTRICT)
+    distrito = models.ForeignKey(Distrito, on_delete=models.CASCADE)  
+    estado = models.ForeignKey(Estado, on_delete=models.CASCADE)
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_modificacion = models.DateTimeField(auto_now=True)
 

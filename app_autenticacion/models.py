@@ -36,4 +36,4 @@ class UsuarioSistema(models.Model):
         db_table = "usuariosistema"
 
     def __str__(self):
-        return f'{self.nombre} {self.apellido}'
+        return f'{self.nombrerecompleto} ({self.usuario})'
