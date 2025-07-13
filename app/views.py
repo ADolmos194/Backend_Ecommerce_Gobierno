@@ -2,6 +2,8 @@ import json
 import logging
 from django.http import JsonResponse
 
+
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework import status
 from datetime import datetime
 from zoneinfo import ZoneInfo
@@ -9,6 +11,7 @@ from zoneinfo import ZoneInfo
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from django.db import connection, transaction, DatabaseError
+
 
 from .serializer import *
 from .models import *
@@ -1955,18 +1958,14 @@ def listar_distritos_activos(request):
             with connection.cursor() as cursor:
                 cursor.execute(
                     """
-                    SELECT
-                        d.id,
-                        d.nombre,
-                        d.provincia_id,
-                        p.nombre as nombre_provincia,
-                        d.estado_id,
-                        TO_CHAR(d.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(d.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
-                    FROM Distrito d
-                    LEFT JOIN Provincia p ON d.provincia_id = p.id
-                    WHERE d.estado_id IN (1)
-                    ORDER BY d.id DESC
+                    SELECT d.id , CONCAT(d.nombre, ' - ', p.nombre, ' - ', dep.nombre, ' - ', pa.nombre) AS nombre
+                    FROM distrito d 
+                    LEFT JOIN provincia p ON d.provincia_id = p.id
+                    LEFT JOIN departamento dep ON p.departamento_id = dep.id
+                    LEFT JOIN pais pa ON dep.pais_id = pa.id
+                    WHERE d.estado_id = 1
+                    ORDER BY d.id DESC;
+
                     """
                 )
                 dic_distritos_activos = ConvertirQueryADiccionarioDato(cursor)
@@ -2200,305 +2199,3 @@ def eliminar_distrito(request, id):
 
 
 # -> CRUD de Localidad - Caserio
-
-api_view(["GET"])
-@transaction.atomic
-def listar_localidadcaserioactivos(request):
-    dic_response = {
-        "code": 400,
-        "status": "error",
-        "message": "Localidades - Caserio activos no encontradas",
-        "message_user": "Localidades - Caserio activos no encontradas",
-        "data": [],
-    }
-
-    if request.method == "GET":
-        try:
-
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    """
-                    SELECT
-                        l.id,
-                        l.nombre
-                    FROM LocalidadCaserio l
-                    WHERE l.estado_id IN (1)
-                    ORDER BY l.id DESC
-                    """
-                )
-                dic_localidadcaserioactivos = ConvertirQueryADiccionarioDato(cursor)
-                cursor.close()
-
-            dic_response.update(
-                {
-                    "code": 200,
-                    "status": "success",
-                    "message_user": "Localidades - Caserio activos obtenidos correctamente",
-                    "message": "Localidades - Caserio activos obtenidos correctamente",
-                    "data": dic_localidadcaserioactivos,
-                }
-            )
-            return JsonResponse(dic_response, status=200)
-
-        except DatabaseError as e:
-            logger.error(f"Error al listar las Localidades - Caserios activos: {str(e)}")
-            dic_response.update(
-                {"message": "Error al listar las Localidades - Caserios activos", "data": str(e)}
-            )
-            return JsonResponse(dic_response, status=500)
-
-    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
-
-
-
-api_view(["GET"])
-@transaction.atomic
-def listar_localidadcaserio(request):
-    dic_response = {
-        "code": 400,
-        "status": "error",
-        "message": "Localidades - Caserios no encontradas",
-        "message_user": "Localidades - Caserios no encontradas",
-        "data": [],
-    }
-
-    if request.method == "GET":
-        try:
-
-            with connection.cursor() as cursor:
-                cursor.execute(
-                    """
-                    SELECT
-                        l.id,
-                        l.nombre,
-                        l.distrito_id,
-                        d.nombre as nombre_distrito,
-                        l.estado_id,
-                        TO_CHAR(l.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_creacion,
-                        TO_CHAR(l.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') as fecha_modificacion
-                    FROM LocalidadCaserio l
-                    LEFT JOIN Distrito d ON l.distrito_id = d.id
-                    WHERE l.estado_id IN (1, 2)
-                    ORDER BY l.id DESC
-                    """
-                )
-                dic_localidadcaserio = ConvertirQueryADiccionarioDato(cursor)
-                cursor.close()
-
-            dic_response.update(
-                {
-                    "code": 200,
-                    "status": "success",
-                    "message_user": "Localidades - Caserios obtenidos correctamente",
-                    "message": "Localidades - Caserios obtenidos correctamente",
-                    "data": dic_localidadcaserio,
-                }
-            )
-            return JsonResponse(dic_response, status=200)
-
-        except DatabaseError as e:
-            logger.error(f"Error al listar las Localidades - Caserios: {str(e)}")
-            dic_response.update(
-                {"message": "Error al listar las Localidades - Caserios", "data": str(e)}
-            )
-            return JsonResponse(dic_response, status=500)
-
-    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
-
-
-@api_view(["POST"])
-@transaction.atomic
-def crear_localidadcaserio(request):
-    dic_response = {
-        "code": 400,
-        "status": "error",
-        "message": "Error al crear la localidad - caserio",
-        "message_user": "Error al crear la localidad - caserio",
-        "data": [],
-    }
-
-    if request.method == "POST":
-        try:
-
-            data = json.loads(request.body)
-            data["estado"] = 1
-            data["fecha_creacion"] = datetime.now(ZoneInfo("America/Lima"))
-            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
-
-            serializer = LocalidadCaserioSerializer(data=data)
-
-            if serializer.is_valid():
-
-                with connection.cursor() as cursor:
-
-                    nombre = data["nombre"]
-
-                    cursor.execute(
-                        "SELECT nombre FROM LocalidadCaserio WHERE nombre=%s and estado_id IN (1, 2)",[nombre]
-                    )
-
-                    if len(cursor.fetchall()) > 0:
-                        dic_response.update(
-                            {
-                                "message_user": "Ya existe una localidad - caserio con el mismo nombre",
-                                "message": "Ya hay un dato existente.",
-                            }
-                        )
-                        return JsonResponse(dic_response, status=400)
-                cursor.close()
-                serializer.save()
-                dic_response.update(
-                    {
-                        "code": 201,
-                        "status": "success",
-                        "message_user": "Localidad - Caserio creado exitosamente",
-                        "message": "Localidad - Caserio creado exitosamente",
-                        "data": serializer.data,
-                    }
-                )
-                return JsonResponse(dic_response, status=201)
-            dic_response.update(
-                {
-                    "data": serializer.errors,
-                }
-            )
-            return JsonResponse(dic_response, status=400)
-        except Exception as e:
-            logger.error(f"Error inesperado al crear la localidad - caserio: {str(e)}")
-            dic_response.update(
-                {"message_user": "Error inesperado", "data": {"error": str(e)}}
-            )
-            return JsonResponse(dic_response, status=500)
-    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
-
-
-@api_view(["PUT"])
-@transaction.atomic
-def actualizar_localidadcaserio(request, id):
-    dic_response = {
-        "code": 400,
-        "status": "error",
-        "message": "Error al actualizar la localidad - caserio",
-        "message_user": "Error al actualizar la localidad - caserio",
-        "data": [],
-    }
-
-    if request.method == "PUT":
-        try:
-
-            data = json.loads(request.body)
-
-            data["fecha_modificacion"] = datetime.now(ZoneInfo("America/Lima"))
-
-            try:
-                queryset = LocalidadCaserio.objects.using("default").get(id=id)
-            except LocalidadCaserio.DoesNotExist:
-
-                return JsonResponse(
-                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
-                )
-
-            serializer = LocalidadCaserioSerializer(queryset, data=data)
-
-            if serializer.is_valid():
-
-                with connection.cursor() as cursor:
-
-                    nombre = data["nombre"]
-                    estado = data["estado"]
-
-                    cursor.execute(
-                        "SELECT nombre FROM LocalidadCaserio WHERE nombre=%s and estado_id = %s and id <> %s", [nombre, estado, id]
-                    )
-                    if len(cursor.fetchall()) > 0:
-                        dic_response.update(
-                            {
-                                "message_user": "Ya existe una localidad - caserio con el mismo nombre",
-                                "message": "Ya hay un dato existente.",
-                            }
-                        )
-                        return JsonResponse(dic_response, status=400)
-
-                    cursor.close()
-                serializer.save()
-                dic_response.update(
-                    {
-                        "code": 200,
-                        "status": "success",
-                        "message_user": "Localidad - Caserio actualizado exitosamente",
-                        "message": "Localidad - Caserio actualizado exitosamente",
-                        "data": serializer.data,
-                    }
-                )
-                return JsonResponse(dic_response, status=200)
-            dic_response.update(
-                {
-                    "message_user": "Datos inválidos.",
-                    "data": serializer.errors,
-                }
-            )
-            return JsonResponse(dic_response, status=400)
-        except Exception as e:
-            logger.error(
-                f"Error inesperado al actualizar la localidad - caserio: {str(e)}"
-            )
-            dic_response.update(
-                {"message_user": "Error inesperado", "data": {"error": str(e)}}
-            )
-            return JsonResponse(dic_response, status=500)
-
-    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
-
-
-@api_view(["DELETE"])
-@transaction.atomic
-def eliminar_localidadcaserio(request, id):
-    dic_response = {
-        "code": 400,
-        "status": "error",
-        "message": "Error al eliminar la localidad - caserio",
-        "message_user": "Error al eliminar la localidad - caserio",
-        "data": [],
-    }
-
-    if request.method == "DELETE":
-        try:
-
-            data = {"estado": 3}
-
-            try:
-                queryset = LocalidadCaserio.objects.using("default").get(id=id)
-
-                queryset.estado = Estado.objects.using("default").get(id=data["estado"])
-                queryset.fecha_modificacion = datetime.now(ZoneInfo("America/Lima"))
-
-                queryset.save()
-
-                serializer = LocalidadCaserioSerializer(queryset)
-
-                dic_response.update(
-                    {
-                        "code": 200,
-                        "status": "success",
-                        "message_user": "Localidad - Caserio eliminado lógicamente",
-                        "message": "Localidad - Caserio eliminado lógicamente",
-                        "data": serializer.data,
-                    }
-                )
-
-                return JsonResponse(dic_response, status=200)
-
-            except LocalidadCaserio.DoesNotExist:
-                return JsonResponse(
-                    dic_response, safe=False, status=status.HTTP_404_NOT_FOUND
-                )
-        except Exception as e:
-            logger.error(
-                f"Error inesperado al eliminar la localidad - caserio: {str(e)}"
-            )
-            dic_response["message"] = "Error inesperado"
-            return JsonResponse(dic_response, status=500)
-    return JsonResponse(dic_response, safe=False, status=status.HTTP_200_OK)
-
-
-#

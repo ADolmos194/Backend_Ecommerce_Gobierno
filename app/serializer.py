@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from .models import (
     Estado,
-    LocalidadCaserio,
     Pais,
     UnidadMedida,
     ConversionUnidadMedida,
@@ -63,14 +62,6 @@ class DistritoSerializer(serializers.ModelSerializer):
     class Meta:
 
         model = Distrito
-        fields = "__all__"
-        
-
-class LocalidadCaserioSerializer(serializers.ModelSerializer):
-
-    class Meta:
-
-        model = LocalidadCaserio
         fields = "__all__"
 
 

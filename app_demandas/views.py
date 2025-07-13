@@ -111,8 +111,8 @@ def listar_demandas(request, id):
                         d.contacto,
                         d.telefono,
                         d.email,
-                        d.usuariosistema_id,
-                        us.usuario AS nombre_usuario,
+                        -- d.usuariosistema_id,
+                        -- us.usuario AS nombre_usuario,
                         d.estado_id,
                         TO_CHAR(d.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') AS fecha_creacion,
                         TO_CHAR(d.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') AS fecha_modificacion

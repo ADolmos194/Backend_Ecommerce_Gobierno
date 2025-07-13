@@ -59,14 +59,5 @@ urlpatterns = [
     path('distrito/crear/', crear_distrito, name='crear_distrito'),
     path('distrito/actualizar/<int:id>/', actualizar_distrito, name='actualizar_distrito'),
     path('distrito/eliminar/<int:id>/', eliminar_distrito, name='eliminar_distrito'),
-    
-    #---> URL LocalidadCaserio
-    
-    path('localidadcaserioactivos/', listar_localidadcaserioactivos, name='listar_localidadcaserioactivos'),
-    path('localidadcaserio/', listar_localidadcaserio, name='listar_localidadcaserio'),
-    path('localidadcaserio/crear/', crear_localidadcaserio, name='crear_localidadcaserio'),
-    path('localidadcaserio/actualizar/<int:id>/', actualizar_localidadcaserio, name='actualizar_localidadcaserio'),
-    path('localidadcaserio/eliminar/<int:id>/', eliminar_localidadcaserio, name='eliminar_localidadcaserio'),
-    
 
-]  + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
+]  + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)  
