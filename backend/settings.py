@@ -22,9 +22,11 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 CORS_ALLOWED_ORIGINS = [
+    "https://agrishop-ik5yz.web.app",
     "http://localhost:4200",
 ]
 CSRF_TRUSTED_ORIGINS = [
+    "https://agrishop-ik5yz.web.app",
     "http://localhost:4200",
 ]
 
