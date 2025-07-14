@@ -97,36 +97,38 @@ def listar_demandas(request, id):
                         d.tiposdemandas_id,
                         td.nombre AS nombre_tipodemanda,
                         d.url_imagen,
-                        d.fecha_publicacion,
+                        TO_CHAR(d.fecha_publicacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD') AS fecha_publicacion,
                         d.tipoproducto_id,
                         tipro.nombre AS nombre_tipoproducto,
                         d.producto_id,
                         pro.nombre AS nombre_producto,
                         d.descripcion,
                         d.nota,
-                        d.localidadcaserio_id,
-                        lc.nombre AS nombre_localidadcaserio,
+                        d.distrito_id,
+                        CONCAT(di.nombre, ' - ', p.nombre, ' - ', dep.nombre, ' - ', pa.nombre) AS nombre_distrito,
+                        d.localidadcaserio,
                         d.referencia_ubicacion,
                         d.direccion,
                         d.contacto,
                         d.telefono,
                         d.email,
-                        -- d.usuariosistema_id,
-                        -- us.usuario AS nombre_usuario,
+                        d.usuariosistema_id,
+                        us.usuario AS nombre_usuario,
                         d.estado_id,
                         TO_CHAR(d.fecha_creacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') AS fecha_creacion,
                         TO_CHAR(d.fecha_modificacion AT TIME ZONE 'America/Lima', 'YYYY-MM-DD HH24:MI:SS') AS fecha_modificacion
                     FROM Demandas d
-                    LEFT JOIN LocalidadCaserio lc ON d.localidadcaserio_id = lc.id
-                    LEFT JOIN Distrito di ON lc.distrito_id = di.id
-                    LEFT JOIN Provincia pr ON di.provincia_id = pr.id
+                    LEFT JOIN Distrito di ON d.distrito_id = di.id
+                    LEFT JOIN Provincia p ON di.provincia_id = p.id
+                    LEFT JOIN Departamento dep ON p.departamento_id = dep.id
+                    LEFT JOIN Pais pa ON dep.pais_id = pa.id
                     LEFT JOIN Tiposdemandas td ON d.tiposdemandas_id = td.id
                     LEFT JOIN Producto pro ON d.producto_id = pro.id
                     LEFT JOIN TipoProducto tipro ON d.tipoproducto_id = tipro.id
                     LEFT JOIN UsuarioSistema us ON d.usuariosistema_id = us.id
                     WHERE d.estado_id IN (1, 2)
                     AND d.usuariosistema_id = %s
-                    ORDER BY d.id DESC
+                    ORDER BY d.id DESC;
                     """,
                     [id]
                 )
